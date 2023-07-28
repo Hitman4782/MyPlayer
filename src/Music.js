@@ -1,0 +1,139 @@
+import React, { Component } from 'react';
+import { View, FlatList, Alert } from 'react-native';
+import { List, Divider, Searchbar } from 'react-native-paper';
+import * as MediaLibrary from 'expo-media-library';
+import * as FileSystem from 'expo-file-system';
+
+class AudioListScreen extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      audioFiles: [],
+      allAudioFiles: [],
+      searchQuery: '',
+    };
+  }
+
+  componentDidMount() {
+    this.getAudioFiles();
+  }
+
+  getAudioFiles = async () => {
+    try {
+      const { status } = await MediaLibrary.requestPermissionsAsync();
+  
+      if (status !== 'granted') {
+        throw new Error('Permission not granted to access media library');
+      }
+  
+      let media = await MediaLibrary.getAssetsAsync({
+        mediaType: 'audio',
+      });
+  
+      media = await MediaLibrary.getAssetsAsync({
+        mediaType: 'audio',
+        first: media.totalCount,
+      });
+  
+      const audioFilesArray = await Promise.all(
+        media.assets.map(async (asset) => {
+          if (asset.albumId !== 'BUILT-IN') {
+            const fileInfo = await FileSystem.getInfoAsync(asset.uri);
+            const fileName = decodeURI(fileInfo.uri.split('/').pop());
+  
+            return {
+              id: asset.id,
+              uri: asset.uri,
+              fileName,
+              title: asset.title ? asset.title : 'Unknown Title',
+              artist: asset.artist ? asset.artist : 'Unknown Artist',
+              duration: asset.duration ? asset.duration : 0,
+            };
+          }
+        })
+      );
+  
+      const filteredAudioFilesArray = audioFilesArray.filter((file) => file);
+      // Sort the audio files alphabetically by their file names
+      filteredAudioFilesArray.sort((a, b) => a.fileName.localeCompare(b.fileName));
+      this.setState({ audioFiles: filteredAudioFilesArray, allAudioFiles: filteredAudioFilesArray });
+    } catch (error) {
+      console.error('Error fetching audio files:', error);
+      Alert.alert('Error', 'Failed to fetch audio files. Please check permissions.');
+    }
+  };
+  
+
+  handlePlayAudio = (audioFile, index) => {
+    console.log('Selected Audio File:', audioFile);
+    console.log('Selected Index:', index);
+    console.log('All Audio Files:', this.state.audioFiles);
+    this.props.navigation.navigate('Player', {
+      audioFile,
+      index,
+      audioFiles: this.state.audioFiles,
+    });
+  };
+
+  // Define a memoized version of the renderItem component
+  MemoizedListItem = React.memo(({ item, index }) => (
+    <List.Item
+      title={`${index + 1}. ${item.fileName}`}
+      description={`${item.title} - ${item.artist}\nDuration: ${this.formatDuration(item.duration)}`}
+      left={(props) => <List.Icon {...props} icon="music-note" color="#CCCEDE" size={30} />}
+      onPress={() => this.handlePlayAudio(item, index)}
+      titleStyle={{ color: '#CCCEDE' }}
+      descriptionStyle={{ color: '#CCCEDE' }} 
+    />
+  ));
+
+  formatDuration = (duration) => {
+    const minutes = Math.floor(duration / 60);
+    const seconds = Math.floor(duration % 60);
+    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  };
+
+  handleSearch = (query) => {
+    const { allAudioFiles } = this.state;
+  
+    if (query === '') {
+      this.setState({ searchQuery: '', audioFiles: allAudioFiles });
+    } else {
+      const filteredAudioFiles = allAudioFiles.filter(
+        (file) =>
+          file.fileName.toLowerCase().includes(query.toLowerCase()) ||
+          file.title.toLowerCase().includes(query.toLowerCase()) ||
+          file.artist.toLowerCase().includes(query.toLowerCase())
+      );
+      this.setState({ searchQuery: query, audioFiles: filteredAudioFiles });
+    }
+  };
+  
+  render() {
+    const { audioFiles, searchQuery } = this.state;
+
+    return (
+      <View style={{ backgroundColor: '#2D3047', flex: 1 , padding: 10}}>
+        <Searchbar
+          placeholder="Search audio files"
+          onChangeText={this.handleSearch}
+          value={searchQuery}
+          style={{
+            backgroundColor: '#44486A',
+          }}
+          placeholderTextColor="#CCCEDE" 
+          iconColor="#CCCEDE" 
+          inputStyle={{ color: '#CCCEDE' }} 
+        />
+        <FlatList
+          data={audioFiles}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item, index }) => <this.MemoizedListItem item={item} index={index} />} // Use the MemoizedListItem
+          ItemSeparatorComponent={() => <Divider />}
+        />
+      </View>
+    );
+  }
+}
+
+export default AudioListScreen;
