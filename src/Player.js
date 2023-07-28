@@ -13,14 +13,16 @@ const Player = ({ route }) => {
       // to display when no audio or radio is being played
       <View style={styles.container}>
         <View style={styles.musicIconContainer}>
-        <MusicNoteIcon size={100} color="#f1304d" />
-        <Text style={styles.audioName}>No Music or Radio is being played.</Text>
-        <View style={styles.controls}>
-          <IconButton icon={PreviousIcon} />
-          <IconButton icon={isPlaying ? PauseIcon : PlayIcon} />
-          <IconButton icon={StopIcon} />
-          <IconButton icon={NextIcon} />
+          <MusicNoteIcon size={100} color="#f1304d" />
+          <Text style={styles.audioName}>No Music or Radio is being played.</Text>
+          <View style={styles.controls}>
+            <IconButton icon={isRepeatEnabled ? RepeatIcon : RepeatOffIcon} onPress={() => setIsRepeatEnabled(!isRepeatEnabled)} />
+            <IconButton icon={PreviousIcon} onPress={handlePrevious} />
+            <IconButton icon={isPlaying ? PauseIcon : PlayIcon} onPress={handlePlayPause} />
+            <IconButton icon={NextIcon} onPress={handleNext} />
+            <IconButton icon={isShuffleEnabled ? ShuffleIcon : ShuffleOffIcon} onPress={() => setIsShuffleEnabled(!isShuffleEnabled)} />
           </View>
+          <IconButton icon={StopIcon} onPress={handleStop} />
         </View>
       </View>
     );
@@ -36,7 +38,7 @@ const Player = ({ route }) => {
   const [currentAudioFile, setCurrentAudioFile] = useState(audioFile);
   const [Radio, setIsRadio] = useState(audioFile.isRadio);
   const [RadioName, setIsRadioName] = useState(audioFile.name);
-  const [currentAudioUrl, setCurrentAudioUrl] = useState(audioFile.uri); 
+  const [currentAudioUrl, setCurrentAudioUrl] = useState(audioFile.uri);
   const [isRepeatEnabled, setIsRepeatEnabled] = useState(false);
   const [isShuffleEnabled, setIsShuffleEnabled] = useState(false);
 
@@ -87,7 +89,7 @@ const Player = ({ route }) => {
       clearInterval(intervalObj);
     };
   }, [audioFile, index, audioFiles]);
-  
+
   useEffect(() => {
     let intervalObj;
 
@@ -98,9 +100,10 @@ const Player = ({ route }) => {
         setIsPlaying(status.isPlaying);
 
         if (status.positionMillis >= status.durationMillis) {
-          if (isRepeatEnabled) {
+          if (isRepeatEnabled) {   
             // If repeat is enabled, replay the current audio
             await sound.current.replayAsync();
+            setIsPlaying(true);
           } else {
             // Otherwise, proceed to the next track
             handleNext();
@@ -152,7 +155,7 @@ const Player = ({ route }) => {
 
   const handleNext = async () => {
     if (Radio) {
-      console.log("Radio stations can't be changed.");
+      console.log("Stream URLs can't be changed.");
       return;
     }
 
@@ -172,14 +175,14 @@ const Player = ({ route }) => {
       console.log('This is the last audio track.');
     }
   };
-  
+
 
   const handlePrevious = async () => {
     const previousIndex = currentIndex - 1;
     if (previousIndex >= 0) {
       const previousAudioFile = audioFiles[previousIndex];
       setCurrentIndex(previousIndex);
-      setIsPlaying(false); 
+      setIsPlaying(false);
       loadSound(previousAudioFile.uri);
     } else {
       console.log('This is the first audio track.');
@@ -247,19 +250,18 @@ const Player = ({ route }) => {
         onSlidingStart={handleSliderSlidingStart}
         onSlidingComplete={handleSliderSlidingComplete}
       />
-
       <Text style={styles.simpleText}>
         {formatTime(position)} / {formatTime(duration)}
       </Text>
 
       <View style={styles.controls}>
-      <IconButton icon={isRepeatEnabled ? RepeatIcon : RepeatOffIcon} onPress={() => setIsRepeatEnabled(!isRepeatEnabled)} />
+        <IconButton icon={isRepeatEnabled ? RepeatIcon : RepeatOffIcon} onPress={() => setIsRepeatEnabled(!isRepeatEnabled)} />
         <IconButton icon={PreviousIcon} onPress={handlePrevious} />
         <IconButton icon={isPlaying ? PauseIcon : PlayIcon} onPress={handlePlayPause} />
-        <IconButton icon={StopIcon} onPress={handleStop} />
         <IconButton icon={NextIcon} onPress={handleNext} />
         <IconButton icon={isShuffleEnabled ? ShuffleIcon : ShuffleOffIcon} onPress={() => setIsShuffleEnabled(!isShuffleEnabled)} />
       </View>
+      <IconButton icon={StopIcon} onPress={handleStop} />
     </View>
   );
 };
