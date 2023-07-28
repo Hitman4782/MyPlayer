@@ -8,4 +8,6 @@ export const PauseIcon = (props) => <MaterialCommunityIcons name="pause" size={3
 export const StopIcon = (props) => <MaterialCommunityIcons name="stop" size={30} color="#f1304d" />;
 export const NextIcon = (props) => <MaterialCommunityIcons name="skip-next" size={30} color="#f1304d" />;
 export const PreviousIcon = (props) => <MaterialCommunityIcons name="skip-previous" size={30} color="#f1304d" />;
+export const RepeatOffIcon = (props) => <MaterialCommunityIcons name="repeat-off" size={30} color="#f1304d" />;
+export const RepeatIcon = (props) => <MaterialCommunityIcons name="repeat" size={30} color="#f1304d" />;
 export const MusicNoteIcon = (props) => <MaterialCommunityIcons name="music-note" {...props} />;

@@ -3,7 +3,7 @@ import { View, StyleSheet } from 'react-native';
 import { Button, Text, IconButton } from 'react-native-paper';
 import Slider from '@react-native-community/slider';
 import { Audio } from 'expo-av';
-import { PlayIcon, PauseIcon, StopIcon, NextIcon, PreviousIcon, MusicNoteIcon } from '../components/Icon';
+import { PlayIcon, PauseIcon, StopIcon, NextIcon, PreviousIcon, MusicNoteIcon, RepeatIcon, RepeatOffIcon } from '../components/Icon';
 
 const Player = ({ route }) => {
   const { audioFile, index, audioFiles } = route.params || {};
@@ -37,6 +37,7 @@ const Player = ({ route }) => {
   const [Radio, setIsRadio] = useState(audioFile.isRadio);
   const [RadioName, setIsRadioName] = useState(audioFile.name);
   const [currentAudioUrl, setCurrentAudioUrl] = useState(audioFile.uri); 
+  const [isRepeatEnabled, setIsRepeatEnabled] = useState(false);
 
 
   const loadSound = async (uri, shouldPlay = true) => {
@@ -95,9 +96,14 @@ const Player = ({ route }) => {
         setPosition(status.positionMillis);
         setIsPlaying(status.isPlaying);
 
-        // Check if the audio playback has reached the end and Call handleNext when the audio ends
         if (status.positionMillis >= status.durationMillis) {
-          handleNext();
+          if (isRepeatEnabled) {
+            // If repeat is enabled, replay the current audio
+            await sound.current.replayAsync();
+          } else {
+            // Otherwise, proceed to the next track
+            handleNext();
+          }
         }
       }
     };
@@ -112,7 +118,7 @@ const Player = ({ route }) => {
     return () => {
       clearInterval(intervalObj);
     };
-  }, [isSeeking, isPlaying, Radio]);
+  }, [isSeeking, isPlaying, Radio, isRepeatEnabled]);
 
   const handlePlayPause = async () => {
     try {
@@ -240,6 +246,7 @@ const Player = ({ route }) => {
       </Text>
 
       <View style={styles.controls}>
+      <IconButton icon={isRepeatEnabled ? RepeatIcon : RepeatOffIcon} onPress={() => setIsRepeatEnabled(!isRepeatEnabled)} />
         <IconButton icon={PreviousIcon} onPress={handlePrevious} />
         <IconButton icon={isPlaying ? PauseIcon : PlayIcon} onPress={handlePlayPause} />
         <IconButton icon={StopIcon} onPress={handleStop} />
