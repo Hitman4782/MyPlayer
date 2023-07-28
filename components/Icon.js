@@ -1,6 +1,6 @@
 import React from 'react';
 import { IconButton } from 'react-native-paper';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 
 // Replace the names of the icons with the corresponding icon names you want to use from MaterialCommunityIcons
 export const PlayIcon = (props) => <MaterialCommunityIcons name="play" size={30} color="#f1304d" />;
@@ -10,4 +10,6 @@ export const NextIcon = (props) => <MaterialCommunityIcons name="skip-next" size
 export const PreviousIcon = (props) => <MaterialCommunityIcons name="skip-previous" size={30} color="#f1304d" />;
 export const RepeatOffIcon = (props) => <MaterialCommunityIcons name="repeat-off" size={30} color="#f1304d" />;
 export const RepeatIcon = (props) => <MaterialCommunityIcons name="repeat" size={30} color="#f1304d" />;
+export const ShuffleIcon = (props) => <MaterialIcons name="shuffle-on" size={30} color="#f1304d" />;
+export const ShuffleOffIcon = (props) => <MaterialCommunityIcons name="shuffle" size={30} color="#f1304d" />;
 export const MusicNoteIcon = (props) => <MaterialCommunityIcons name="music-note" {...props} />;

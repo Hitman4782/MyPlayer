@@ -3,7 +3,7 @@ import { View, StyleSheet } from 'react-native';
 import { Button, Text, IconButton } from 'react-native-paper';
 import Slider from '@react-native-community/slider';
 import { Audio } from 'expo-av';
-import { PlayIcon, PauseIcon, StopIcon, NextIcon, PreviousIcon, MusicNoteIcon, RepeatIcon, RepeatOffIcon } from '../components/Icon';
+import { PlayIcon, PauseIcon, StopIcon, NextIcon, PreviousIcon, MusicNoteIcon, RepeatIcon, RepeatOffIcon, ShuffleIcon, ShuffleOffIcon } from '../components/Icon';
 
 const Player = ({ route }) => {
   const { audioFile, index, audioFiles } = route.params || {};
@@ -38,6 +38,7 @@ const Player = ({ route }) => {
   const [RadioName, setIsRadioName] = useState(audioFile.name);
   const [currentAudioUrl, setCurrentAudioUrl] = useState(audioFile.uri); 
   const [isRepeatEnabled, setIsRepeatEnabled] = useState(false);
+  const [isShuffleEnabled, setIsShuffleEnabled] = useState(false);
 
 
   const loadSound = async (uri, shouldPlay = true) => {
@@ -151,11 +152,17 @@ const Player = ({ route }) => {
 
   const handleNext = async () => {
     if (Radio) {
-      console.log("Radio stations cant be changed.");
+      console.log("Radio stations can't be changed.");
       return;
     }
-  
-    const nextIndex = currentIndex + 1;
+
+    let nextIndex;
+    if (isShuffleEnabled) {
+      nextIndex = Math.floor(Math.random() * audioFiles.length);
+    } else {
+      nextIndex = currentIndex + 1;
+    }
+
     if (nextIndex < audioFiles.length) {
       const nextAudioFile = audioFiles[nextIndex];
       setCurrentIndex(nextIndex);
@@ -251,6 +258,7 @@ const Player = ({ route }) => {
         <IconButton icon={isPlaying ? PauseIcon : PlayIcon} onPress={handlePlayPause} />
         <IconButton icon={StopIcon} onPress={handleStop} />
         <IconButton icon={NextIcon} onPress={handleNext} />
+        <IconButton icon={isShuffleEnabled ? ShuffleIcon : ShuffleOffIcon} onPress={() => setIsShuffleEnabled(!isShuffleEnabled)} />
       </View>
     </View>
   );
