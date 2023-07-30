@@ -91,6 +91,23 @@ const Player = ({ route }) => {
       loadSound(audioFile.uri);
     }
 
+    const setAudioMode = async () => {
+      try {
+        await Audio.setAudioModeAsync({
+          allowsRecordingIOS: false,
+          //interruptionModeIOS: Audio.INTERRUPTION_MODE_IOS_DO_NOT_MIX,
+          playsInSilentModeIOS: true,
+          //interruptionModeAndroid: Audio.INTERRUPTION_MODE_ANDROID_DO_NOT_MIX,
+          shouldDuckAndroid: true,
+          staysActiveInBackground: true, 
+        });
+      } catch (error) {
+        console.error('Error setting audio mode:', error);
+      }
+    };
+
+    setAudioMode();
+
     return () => {
       sound.current.unloadAsync();
       clearInterval(intervalObj);
