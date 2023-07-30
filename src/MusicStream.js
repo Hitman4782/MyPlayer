@@ -6,24 +6,23 @@ import { Share } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import NetInfo from '@react-native-community/netinfo';
 
-const RadioStreamScreen = ({ navigation }) => {
-  const [radioStations, setRadioStations] = useState([]);
+const MusicStreamScreen = ({ navigation }) => {
+  const [MusicStations, setMusicStations] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [visible, setVisible] = useState(false);
   const [selectedStation, setSelectedStation] = useState(null);
-  const [newStationName, setNewStationName] = useState('');
-  const [newStationLocation, setNewStationLocation] = useState('');
-  const [newStationUrl, setNewStationUrl] = useState('');
+  const [newMusicName, setNewMusicName] = useState('');
+  const [newMusicUrl, setNewMusicUrl] = useState('');
   const [isModalVisible, setModalVisible] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const [fadeAnim] = useState(new Animated.Value(0));
   const [loading, setLoading] = useState(true); 
 
   useEffect(() => {
-    const unsubscribe = firebase.firestore().collection('RadioStation').onSnapshot(
+    const unsubscribe = firebase.firestore().collection('MusicStream').onSnapshot(
       (snapshot) => {
         const stations = snapshot.docs.map((doc) => doc.data());
-        setRadioStations(stations);
+        setMusicStations(stations);
         setLoading(false);
       },
       (error) => {
@@ -55,23 +54,21 @@ const RadioStreamScreen = ({ navigation }) => {
       navigation.navigate('Player', {
         audioFile: { uri: url, isRadio: true, name: name },
         RadioIndex: index,
-        radioStations: filteredRadioStations, 
+        radioStations: filteredMusicStations, 
       });
     }
   };
 
   const handleAddStation = async () => {
     try {
-      await firebase.firestore().collection('RadioStation').add({
-        Name: newStationName,
-        Location: newStationLocation,
-        url: newStationUrl,
+      await firebase.firestore().collection('MusicStream').add({
+        Name: newMusicName,
+        url: newMusicUrl,
       });
       // Clear the input fields after successful addition
-      setNewStationName('');
-      setNewStationLocation('');
-      setNewStationUrl('');
-      Alert.alert('Success', 'New radio station added!');
+      setNewMusicName('');
+      setNewMusicUrl('');
+      Alert.alert('Success', 'New Music station added!');
       setModalVisible(false); // Hide the modal after successful addition
     } catch (error) {
       console.error('Error adding station:', error.message);
@@ -94,7 +91,7 @@ const RadioStreamScreen = ({ navigation }) => {
       const { Name, Location, url } = selectedStation;
       try {
         const result = await Share.share({
-          message: `Check out this radio station:\n${Name}\nLocation: ${Location}\nURL: ${url}`,
+          message: `Check out this Music station:\n${Name}\nURL: ${url}`,
         });
         if (result.action === Share.sharedAction) {
           if (result.activityType) {
@@ -112,11 +109,10 @@ const RadioStreamScreen = ({ navigation }) => {
     hideMenu();
   };
 
-  const filteredRadioStations = radioStations
+  const filteredMusicStations = MusicStations
     .filter(
       (station) =>
-        station.Name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        station.Location.toLowerCase().includes(searchQuery.toLowerCase())
+        station.Name.toLowerCase().includes(searchQuery.toLowerCase())
     )
     .map((station, index) => ({ ...station, index })); 
 
@@ -138,12 +134,12 @@ const RadioStreamScreen = ({ navigation }) => {
     }).start(() => setShowPopup(false));
   };
   
-  const renderRadioStationCard = ({ item, index }) => (
+  const renderMusicStationCard = ({ item, index }) => (
     <TouchableOpacity
       style={styles.card}
       onPress={() => handleStartPlaying(item.url, item.Name, item.index)}
     >
-      <View style={styles.radioInfo}>
+      <View style={styles.MusicInfo}>
         <Text style={styles.cardName}>{item.Name}</Text>
         <Text style={styles.cardLocation}>{item.Location}</Text>
       </View>
@@ -164,9 +160,10 @@ const RadioStreamScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
+         <Text style={styles.Title}>Add or Play your Favorite Music Stream</Text>
       <View style={styles.searchContainer}>
         <Searchbar
-          placeholder="Search radio stations"
+          placeholder="Search Music"
           onChangeText={handleSearch}
           value={searchQuery}
           style={{
@@ -182,9 +179,9 @@ const RadioStreamScreen = ({ navigation }) => {
         <ActivityIndicator color="#f1304d" size="large" />
       ) : (
         <FlatList
-          data={filteredRadioStations} 
+          data={filteredMusicStations} 
           keyExtractor={(item) => item.Name}
-          renderItem={renderRadioStationCard}
+          renderItem={renderMusicStationCard}
           contentContainerStyle={styles.listContainer}
         />
       )}
@@ -200,28 +197,21 @@ const RadioStreamScreen = ({ navigation }) => {
             ]}
           >
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Add New Station</Text>
+              <Text style={styles.modalTitle}>Add New Music URL</Text>
             </View>
             <View style={styles.modalContent}>
               <TextInput
                 style={[styles.input, { backgroundColor: '#44486A', color: '#CCCEDE' }]}
                 placeholder="Name"
-                value={newStationName}
-                onChangeText={setNewStationName}
-                placeholderTextColor="#CCCEDE"
-              />
-              <TextInput
-                style={[styles.input, { backgroundColor: '#44486A', color: '#CCCEDE' }]}
-                placeholder="Location"
-                value={newStationLocation}
-                onChangeText={setNewStationLocation}
+                value={newMusicName}
+                onChangeText={setNewMusicName}
                 placeholderTextColor="#CCCEDE"
               />
               <TextInput
                 style={[styles.input, { backgroundColor: '#44486A', color: '#CCCEDE' }]}
                 placeholder="URL"
-                value={newStationUrl}
-                onChangeText={setNewStationUrl}
+                value={newMusicUrl}
+                onChangeText={setNewMusicUrl}
                 placeholderTextColor="#CCCEDE"
               />
               <TouchableOpacity style={styles.Button} onPress={handleAddStation}>
@@ -273,7 +263,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between', 
   },
-  radioInfo: {
+  MusicInfo: {
     flex: 1,
   },
   cardName: {
@@ -284,6 +274,14 @@ const styles = StyleSheet.create({
   cardLocation: {
     fontSize: 14,
     color: '#CCCEDE',
+  },
+  Title: {
+    fontSize: 18,
+    bottom: 5,
+    textAlign: 'center',
+    color: '#CCCEDE',
+    fontWeight: 'bold',
+    paddingBottom: 5,
   },
   dots: {
     fontSize: 24,
@@ -337,4 +335,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default RadioStreamScreen;
+export default MusicStreamScreen;

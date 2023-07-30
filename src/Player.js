@@ -29,6 +29,7 @@ const Player = ({ route }) => {
   }
 
   const sound = useRef(new Audio.Sound());
+  const isSliderDisabled = duration <= 0;
   const [isPlaying, setIsPlaying] = useState(false);
   const [isSeeking, setIsSeeking] = useState(false);
   const [position, setPosition] = useState(0);
@@ -42,6 +43,7 @@ const Player = ({ route }) => {
   const [isRepeatEnabled, setIsRepeatEnabled] = useState(false);
   const [isShuffleEnabled, setIsShuffleEnabled] = useState(false);
   const [currentRadioIndex, setCurrentRadioIndex] = useState(RadioIndex);
+  const [isMusic, setIsMusic] = useState(!audioFile.isRadio);
 
 
   const loadSound = async (uri, shouldPlay = true) => {
@@ -77,9 +79,10 @@ const Player = ({ route }) => {
   useEffect(() => {
     setCurrentAudioFile(audioFile);
     setCurrentIndex(index);
+    setIsMusic(!audioFile.isRadio); // Check if it's music
     setIsRadio(audioFile.isRadio);
-    setIsRadioName(audioFile.name)
-    console.log(RadioName)
+    setIsRadioName(audioFile.name);
+    console.log(RadioName);
 
     if (audioFile.isRadio) {
       loadSound(audioFile.uri, true);
@@ -95,37 +98,43 @@ const Player = ({ route }) => {
 
   useEffect(() => {
     let intervalObj;
-
+  
     const updatePosition = async () => {
-      if (sound.current && !isSeeking && isPlaying && !Radio) {
+      if (sound.current && !isSeeking) {
         const status = await sound.current.getStatusAsync();
         setPosition(status.positionMillis);
         setIsPlaying(status.isPlaying);
-
+  
         if (status.positionMillis >= status.durationMillis) {
-          if (isRepeatEnabled) {   
+          if (isRepeatEnabled) {
             // If repeat is enabled, replay the current audio
             await sound.current.replayAsync();
             setIsPlaying(true);
           } else {
-            // Otherwise, proceed to the next track
-            handleNext();
+            // Check if the duration is greater than 1 before proceeding to the next track
+            if (status.durationMillis > 1) {
+              handleNext();
+            } else {
+              // If duration is less than or equal to 1, and the radio is playing,
+              // do not trigger handleNext, but keep playing the radio.
+              setIsPlaying(true);
+            }
           }
         }
       }
     };
-
-    if (isPlaying && !Radio) {
+  
+    if (isPlaying) {
       intervalObj = setInterval(updatePosition, 1000);
       setIntervalObj(intervalObj);
     } else {
       clearInterval(intervalObj);
     }
-
+  
     return () => {
       clearInterval(intervalObj);
     };
-  }, [isSeeking, isPlaying, Radio, isRepeatEnabled]);
+  }, [isSeeking, isPlaying, isRepeatEnabled]);
 
   const handlePlayPause = async () => {
     try {
@@ -256,14 +265,14 @@ const Player = ({ route }) => {
     <View style={styles.container}>
       <View style={styles.musicIconContainer}>
         <MusicNoteIcon size={100} color="#f1304d" />
-        {Radio ? (
-          <Text style={styles.radioName}>Playing Radio: {RadioName}</Text>
-        ) : (
+        {isMusic ? ( // Display music-specific information
           <View>
             <Text style={styles.audioName}>Name: {currentAudioFile.fileName}</Text>
             <Text style={styles.audioName}>Title: {currentAudioFile.title}</Text>
             <Text style={styles.audioName}>Artist: {currentAudioFile.artist}</Text>
           </View>
+        ) : ( // Display radio-specific information
+          <Text style={styles.radioName}>Playing: {RadioName}</Text>
         )}
       </View>
 
@@ -280,6 +289,7 @@ const Player = ({ route }) => {
         onValueChange={handleSliderValueChange}
         onSlidingStart={handleSliderSlidingStart}
         onSlidingComplete={handleSliderSlidingComplete}
+        disabled={isSliderDisabled}
       />
       <Text style={styles.simpleText}>
         {formatTime(position)} / {formatTime(duration)}

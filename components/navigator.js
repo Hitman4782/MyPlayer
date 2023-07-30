@@ -4,8 +4,10 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
 import Music from '../src/Music';
-import Radio from '../src/Radio';
+import RadioStreamScreen from '../src/RadioStream';
+import StreamScreen from '../src/Stream';
 import Player from '../src/Player';
+import MusicStreamScreen from '../src/MusicStream';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -17,7 +19,8 @@ const MainNavigator = () => {
       <Stack.Navigator>
         <Stack.Screen name="Navigator" component={TabNavigator} options={{ headerShown: false }} />
         <Stack.Screen name="Music" component={Music} options={{ headerShown: false }} />
-        <Stack.Screen name="Radio" component={Radio} options={{ headerShown: false }} />
+        <Stack.Screen name="Radio Stream" component={RadioStreamScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="Music Stream" component={MusicStreamScreen} options={{ headerShown: false }} />
         <Stack.Screen name="Player" component={Player} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
@@ -36,7 +39,7 @@ const TabNavigator = () => {
             iconName = 'musical-notes';
           } else if (route.name === 'Player') {
             iconName = 'play';
-          } else if (route.name === 'Radio') {
+          } else if (route.name === 'Stream') {
             iconName = 'radio';
           }
 
@@ -51,10 +54,9 @@ const TabNavigator = () => {
         },
       })}
     >
-
-      <Tab.Screen name="Music" component={Music} options={{ headerShown: false }} />
+      <Tab.Screen name="Stream" component={StreamScreen} options={{ headerShown: false }}/>
       <Tab.Screen name="Player" component={Player} options={{ headerShown: false }} />
-      <Tab.Screen name="Radio" component={Radio} options={{ headerShown: false }}/>
+      <Tab.Screen name="Music" component={Music} options={{ headerShown: false }} />
     </Tab.Navigator>
   );
 };
