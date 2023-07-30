@@ -50,17 +50,15 @@ const RadioStreamScreen = ({ navigation }) => {
     ToastAndroid.show(message, ToastAndroid.SHORT);
   };
 
-  const handleStartPlaying = (url, name, index) => {
+  const handleStartPlaying = (url, name, index,) => {
     if (url) {
       navigation.navigate('Player', {
         audioFile: { uri: url, isRadio: true, name: name },
-        currentIndex: index,
+        RadioIndex: index,
         radioStations: filteredRadioStations, 
       });
     }
   };
-
-
 
   const handleAddStation = async () => {
     try {
@@ -139,6 +137,7 @@ const RadioStreamScreen = ({ navigation }) => {
       useNativeDriver: true,
     }).start(() => setShowPopup(false));
   };
+  
   const renderRadioStationCard = ({ item, index }) => (
     <TouchableOpacity
       style={styles.card}

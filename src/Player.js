@@ -6,8 +6,8 @@ import { Audio } from 'expo-av';
 import { PlayIcon, PauseIcon, StopIcon, NextIcon, PreviousIcon, MusicNoteIcon, RepeatIcon, RepeatOffIcon, ShuffleIcon, ShuffleOffIcon } from '../components/Icon';
 
 const Player = ({ route }) => {
-  const { audioFile, index, audioFiles } = route.params || {};
-
+  const { audioFile, index, audioFiles, RadioIndex,  radioStations } = route.params || {};
+  //console.log(RadioIndex);
   if (!audioFile) {
     return (
       // to display when no audio or radio is being played
@@ -41,6 +41,7 @@ const Player = ({ route }) => {
   const [currentAudioUrl, setCurrentAudioUrl] = useState(audioFile.uri);
   const [isRepeatEnabled, setIsRepeatEnabled] = useState(false);
   const [isShuffleEnabled, setIsShuffleEnabled] = useState(false);
+  const [currentRadioIndex, setCurrentRadioIndex] = useState(RadioIndex);
 
 
   const loadSound = async (uri, shouldPlay = true) => {
@@ -65,8 +66,8 @@ const Player = ({ route }) => {
           setCurrentAudioFile(audioFiles[audioIndex]);
         }
       }
-      setIsRadioName(audioFile.name)
-      console.log(RadioName)
+     
+      
       console.log('Sound loaded successfully. Duration:', status.durationMillis);
     } catch (error) {
       console.error('Error loading audio:', error);
@@ -77,6 +78,8 @@ const Player = ({ route }) => {
     setCurrentAudioFile(audioFile);
     setCurrentIndex(index);
     setIsRadio(audioFile.isRadio);
+    setIsRadioName(audioFile.name)
+    console.log(RadioName)
 
     if (audioFile.isRadio) {
       loadSound(audioFile.uri, true);
@@ -154,40 +157,68 @@ const Player = ({ route }) => {
   };
 
   const handleNext = async () => {
+    // Handling radio stations
     if (Radio) {
-      console.log("Stream URLs can't be changed.");
-      return;
-    }
-
-    let nextIndex;
-    if (isShuffleEnabled) {
-      nextIndex = Math.floor(Math.random() * audioFiles.length);
+      const nextIndex = currentRadioIndex + 1;
+      if (nextIndex < radioStations.length) {
+        const nextStation = radioStations[nextIndex];
+        setCurrentRadioIndex(nextIndex); // Update the current radio station index
+        setIsPlaying(false);
+        loadSound(nextStation.url);
+        setIsRadioName(nextStation.Name); // Update the radio name
+      } else {
+        console.log('This is the last radio station.');
+      }
     } else {
-      nextIndex = currentIndex + 1;
-    }
+      // Handling regular audio tracks
+      let nextIndex;
+      if (isShuffleEnabled) {
+        nextIndex = Math.floor(Math.random() * audioFiles.length);
+      } else {
+        nextIndex = currentIndex + 1;
+      }
 
-    if (nextIndex < audioFiles.length) {
-      const nextAudioFile = audioFiles[nextIndex];
-      setCurrentIndex(nextIndex);
-      setIsPlaying(false);
-      loadSound(nextAudioFile.uri);
-    } else {
-      console.log('This is the last audio track.');
+      if (nextIndex < audioFiles.length) {
+        const nextAudioFile = audioFiles[nextIndex];
+        setCurrentIndex(nextIndex); // Update the current regular audio track index
+        setIsPlaying(false);
+        setIsRadioName(null); // Set radio name to null for regular audio tracks
+        loadSound(nextAudioFile.uri);
+      } else {
+        console.log('This is the last audio track.');
+      }
     }
   };
-
+  
 
   const handlePrevious = async () => {
-    const previousIndex = currentIndex - 1;
-    if (previousIndex >= 0) {
-      const previousAudioFile = audioFiles[previousIndex];
-      setCurrentIndex(previousIndex);
-      setIsPlaying(false);
-      loadSound(previousAudioFile.uri);
+    // Handling radio stations
+    if (Radio) {
+      const previousIndex = currentRadioIndex - 1;
+      if (previousIndex >= 0) {
+        const previousStation = radioStations[previousIndex];
+        setCurrentRadioIndex(previousIndex); // Update the current radio station index
+        setIsPlaying(false);
+        loadSound(previousStation.url);
+        setIsRadioName(previousStation.Name); // Update the radio name
+      } else {
+        console.log('This is the first radio station.');
+      }
     } else {
-      console.log('This is the first audio track.');
+      // Handling regular audio tracks
+      const previousIndex = currentIndex - 1;
+      if (previousIndex >= 0) {
+        const previousAudioFile = audioFiles[previousIndex];
+        setCurrentIndex(previousIndex); // Update the current regular audio track index
+        setIsPlaying(false);
+        setIsRadioName(null); // Set radio name to null for regular audio tracks
+        loadSound(previousAudioFile.uri);
+      } else {
+        console.log('This is the first audio track.');
+      }
     }
   };
+  
 
   const handleSliderValueChange = (value) => {
     setPosition(value);
