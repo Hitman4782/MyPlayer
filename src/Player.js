@@ -29,6 +29,7 @@ const Player = ({ route }) => {
   }
 
   const sound = useRef(new Audio.Sound());
+  const [isRouteRadio, setIsRouteRadio] = useState(false);
   const isSliderDisabled = duration <= 0;
   const [isPlaying, setIsPlaying] = useState(false);
   const [isSeeking, setIsSeeking] = useState(false);
@@ -82,8 +83,8 @@ const Player = ({ route }) => {
     setIsMusic(!audioFile.isRadio); // Check if it's music
     setIsRadio(audioFile.isRadio);
     setIsRadioName(audioFile.name);
-    console.log(RadioName);
 
+    // Check if isRadio is true in the route params
     if (audioFile.isRadio) {
       loadSound(audioFile.uri, true);
     } else {
@@ -135,6 +136,32 @@ const Player = ({ route }) => {
       clearInterval(intervalObj);
     };
   }, [isSeeking, isPlaying, isRepeatEnabled]);
+
+    // New useEffect hook to handle changes in the isRadio parameter from the route
+    useEffect(() => {
+      if (route.params && route.params.isRadio) {
+        setIsRouteRadio(true);
+      } else {
+        setIsRouteRadio(false);
+      }
+    }, [route.params]);
+  
+    // New useEffect hook to handle clearing values when isRadio becomes true in the route
+    useEffect(() => {
+      if (isRouteRadio) {
+        setIsPlaying(false);
+        setIsSeeking(false);
+        setPosition(0);
+        setDuration(0);
+        setCurrentIndex(null);
+        setCurrentAudioFile(null);
+        setCurrentAudioUrl(null);
+        setIsRepeatEnabled(false);
+        setIsShuffleEnabled(false);
+        setCurrentRadioIndex(null);
+      }
+    }, [isRouteRadio]);
+  
 
   const handlePlayPause = async () => {
     try {
