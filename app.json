@@ -9,7 +9,7 @@
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#2D3047"
     },
     "assetBundlePatterns": [
       "**/*"
@@ -20,7 +20,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#2D3047"
       },
       "permissions": [
         "READ_EXTERNAL_STORAGE",
@@ -28,9 +28,14 @@
       ],
       "package": "com.hitman4782.MyPlayer",
       "versionCode": 1
-    },    
+    },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "10c078de-2a76-47b8-aadf-41b46c85cfa0"
+      }
     }
   }
 }
