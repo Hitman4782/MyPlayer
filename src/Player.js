@@ -3,10 +3,11 @@ import { View, StyleSheet } from 'react-native';
 import { Button, Text, IconButton } from 'react-native-paper';
 import Slider from '@react-native-community/slider';
 import { Audio } from 'expo-av';
-import { PlayIcon, PauseIcon, StopIcon, NextIcon, PreviousIcon, MusicNoteIcon, RepeatIcon, RepeatOffIcon, ShuffleIcon, ShuffleOffIcon } from '../components/Icon';
+import { firebase } from '../components/firebase';
+import { PlayIcon, PauseIcon, StopIcon, NextIcon, PreviousIcon, MusicNoteIcon, RepeatIcon, RepeatOffIcon, ShuffleIcon, ShuffleOffIcon, FavoriteBorderIcon, FavoriteIcon } from '../components/Icon';
 
 const Player = ({ route }) => {
-  const { audioFile, index, audioFiles, RadioIndex,  radioStations } = route.params || {};
+  const { audioFile, index, audioFiles, RadioIndex, radioStations } = route.params || {};
   //console.log(RadioIndex);
   if (!audioFile) {
     return (
@@ -45,6 +46,7 @@ const Player = ({ route }) => {
   const [isShuffleEnabled, setIsShuffleEnabled] = useState(false);
   const [currentRadioIndex, setCurrentRadioIndex] = useState(RadioIndex);
   const [isMusic, setIsMusic] = useState(!audioFile.isRadio);
+  const [favorites, setFavorites] = useState([]);
 
 
   const loadSound = async (uri, shouldPlay = true) => {
@@ -69,8 +71,8 @@ const Player = ({ route }) => {
           setCurrentAudioFile(audioFiles[audioIndex]);
         }
       }
-     
-      
+
+
       console.log('Sound loaded successfully. Duration:', status.durationMillis);
     } catch (error) {
       console.error('Error loading audio:', error);
@@ -99,30 +101,70 @@ const Player = ({ route }) => {
           playsInSilentModeIOS: true,
           //interruptionModeAndroid: Audio.INTERRUPTION_MODE_ANDROID_DO_NOT_MIX,
           shouldDuckAndroid: true,
-          staysActiveInBackground: true, 
+          staysActiveInBackground: true,
         });
       } catch (error) {
         console.error('Error setting audio mode:', error);
       }
     };
-
     setAudioMode();
+
+    const unsubscribeFavorites = firebase.firestore().collection('Favorites').onSnapshot(
+      (snapshot) => {
+        const favoriteStations = snapshot.docs.map((doc) => doc.data());
+        setFavorites(favoriteStations);
+      },
+      (error) => {
+        console.error('Firebase error:', error.message);
+        showToast('Error fetching favorites from Firebase.');
+      }
+    );
 
     return () => {
       sound.current.unloadAsync();
       clearInterval(intervalObj);
+      unsubscribeFavorites();
     };
   }, [audioFile, index, audioFiles]);
 
+  const isFavorite = () => {
+    return favorites.some((fav) => fav.Name === RadioName && fav.url === currentAudioUrl);
+  };
+
+  const toggleFavorite = async () => {
+    try {
+      const stationRef = firebase.firestore().collection('Favorites');
+      if (isFavorite()) {
+        // Remove station from favorites
+        await stationRef.where('Name', '==', RadioName)
+          .where('url', '==', currentAudioUrl)
+          .get()
+          .then((querySnapshot) => {
+            querySnapshot.forEach((doc) => {
+              doc.ref.delete();
+            });
+          });
+      } else {
+        // Add station to favorites
+        await stationRef.add({
+          Name: RadioName,
+          url: currentAudioUrl,
+        });
+      }
+    } catch (error) {
+      console.error('Error adding/removing station from favorites:', error.message);
+    }
+  };
+
   useEffect(() => {
     let intervalObj;
-  
+
     const updatePosition = async () => {
       if (sound.current && !isSeeking) {
         const status = await sound.current.getStatusAsync();
         setPosition(status.positionMillis);
         setIsPlaying(status.isPlaying);
-  
+
         if (status.positionMillis >= status.durationMillis) {
           if (isRepeatEnabled) {
             // If repeat is enabled, replay the current audio
@@ -141,44 +183,44 @@ const Player = ({ route }) => {
         }
       }
     };
-  
+
     if (isPlaying) {
       intervalObj = setInterval(updatePosition, 1000);
       setIntervalObj(intervalObj);
     } else {
       clearInterval(intervalObj);
     }
-  
+
     return () => {
       clearInterval(intervalObj);
     };
   }, [isSeeking, isPlaying, isRepeatEnabled]);
 
-    // New useEffect hook to handle changes in the isRadio parameter from the route
-    useEffect(() => {
-      if (route.params && route.params.isRadio) {
-        setIsRouteRadio(true);
-      } else {
-        setIsRouteRadio(false);
-      }
-    }, [route.params]);
-  
-    // New useEffect hook to handle clearing values when isRadio becomes true in the route
-    useEffect(() => {
-      if (isRouteRadio) {
-        setIsPlaying(false);
-        setIsSeeking(false);
-        setPosition(0);
-        setDuration(0);
-        setCurrentIndex(null);
-        setCurrentAudioFile(null);
-        setCurrentAudioUrl(null);
-        setIsRepeatEnabled(false);
-        setIsShuffleEnabled(false);
-        setCurrentRadioIndex(null);
-      }
-    }, [isRouteRadio]);
-  
+  // New useEffect hook to handle changes in the isRadio parameter from the route
+  useEffect(() => {
+    if (route.params && route.params.isRadio) {
+      setIsRouteRadio(true);
+    } else {
+      setIsRouteRadio(false);
+    }
+  }, [route.params]);
+
+  // New useEffect hook to handle clearing values when isRadio becomes true in the route
+  useEffect(() => {
+    if (isRouteRadio) {
+      setIsPlaying(false);
+      setIsSeeking(false);
+      setPosition(0);
+      setDuration(0);
+      setCurrentIndex(null);
+      setCurrentAudioFile(null);
+      setCurrentAudioUrl(null);
+      setIsRepeatEnabled(false);
+      setIsShuffleEnabled(false);
+      setCurrentRadioIndex(null);
+    }
+  }, [isRouteRadio]);
+
 
   const handlePlayPause = async () => {
     try {
@@ -242,7 +284,7 @@ const Player = ({ route }) => {
       }
     }
   };
-  
+
 
   const handlePrevious = async () => {
     // Handling radio stations
@@ -271,7 +313,7 @@ const Player = ({ route }) => {
       }
     }
   };
-  
+
 
   const handleSliderValueChange = (value) => {
     setPosition(value);
@@ -316,7 +358,10 @@ const Player = ({ route }) => {
             <Text style={styles.audioName}>Artist: {currentAudioFile.artist}</Text>
           </View>
         ) : ( // Display radio-specific information
-          <Text style={styles.radioName}>Playing: {RadioName}</Text>
+          <View>
+            <Text style={styles.radioName}>Playing: {RadioName}</Text>
+            {/* <IconButton icon={isFavorite() ? FavoriteIcon : FavoriteBorderIcon} onPress={toggleFavorite} /> */}
+          </View>
         )}
       </View>
 
@@ -345,8 +390,11 @@ const Player = ({ route }) => {
         <IconButton icon={isPlaying ? PauseIcon : PlayIcon} onPress={handlePlayPause} />
         <IconButton icon={NextIcon} onPress={handleNext} />
         <IconButton icon={isShuffleEnabled ? ShuffleIcon : ShuffleOffIcon} onPress={() => setIsShuffleEnabled(!isShuffleEnabled)} />
+        <IconButton icon={isFavorite() ? FavoriteIcon : FavoriteBorderIcon} onPress={toggleFavorite} />
       </View>
+      <View style={styles.controls}>
       <IconButton icon={StopIcon} onPress={handleStop} />
+      </View>
     </View>
   );
 };

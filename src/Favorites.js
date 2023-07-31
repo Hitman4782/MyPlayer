@@ -6,7 +6,7 @@ import { Share } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import NetInfo from '@react-native-community/netinfo';
 
-const MusicStreamScreen = ({ navigation }) => {
+const FavoriteScreen = ({ navigation }) => {
   const [MusicStations, setMusicStations] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [visible, setVisible] = useState(false);
@@ -17,69 +17,9 @@ const MusicStreamScreen = ({ navigation }) => {
   const [showPopup, setShowPopup] = useState(false);
   const [fadeAnim] = useState(new Animated.Value(0));
   const [loading, setLoading] = useState(true); 
-  const [favorites, setFavorites] = useState([]);
 
   useEffect(() => {
-    const unsubscribeStations = firebase.firestore().collection('MusicStream').onSnapshot(
-      (snapshot) => {
-        const stations = snapshot.docs.map((doc) => doc.data());
-        setMusicStations(stations);
-        setLoading(false);
-      },
-      (error) => {
-        console.error('Firebase error:', error.message);
-        showToast('Error fetching data from Firebase.');
-        setLoading(false);
-      }
-    );
-
-    const unsubscribeFavorites = firebase.firestore().collection('Favorites').onSnapshot(
-      (snapshot) => {
-        const favoriteStations = snapshot.docs.map((doc) => doc.data());
-        setFavorites(favoriteStations);
-      },
-      (error) => {
-        console.error('Firebase error:', error.message);
-        showToast('Error fetching favorites from Firebase.');
-      }
-    );
-
-    return () => {
-      unsubscribeStations();
-      unsubscribeFavorites();
-    };
-  }, []);
-
-  // Function to check if a station is a favorite
-  const isFavorite = (station) => {
-    return favorites.some((fav) => fav.Name === station.Name && fav.url === station.url);
-  };
-
-  // Function to add/remove a station to/from favorites
-  const toggleFavorite = async (station) => {
-    try {
-      const stationRef = firebase.firestore().collection('Favorites');
-      if (isFavorite(station)) {
-        // Remove station from favorites
-        await stationRef.where('Name', '==', station.Name)
-          .where('url', '==', station.url)
-          .get()
-          .then((querySnapshot) => {
-            querySnapshot.forEach((doc) => {
-              doc.ref.delete();
-            });
-          });
-      } else {
-        // Add station to favorites
-        await stationRef.add(station);
-      }
-    } catch (error) {
-      console.error('Error adding/removing station from favorites:', error.message);
-    }
-  };
-
-  useEffect(() => {
-    const unsubscribe = firebase.firestore().collection('MusicStream').onSnapshot(
+    const unsubscribe = firebase.firestore().collection('Favorites').onSnapshot(
       (snapshot) => {
         const stations = snapshot.docs.map((doc) => doc.data());
         setMusicStations(stations);
@@ -121,7 +61,7 @@ const MusicStreamScreen = ({ navigation }) => {
 
   const handleAddStation = async () => {
     try {
-      await firebase.firestore().collection('MusicStream').add({
+      await firebase.firestore().collection('Favorites').add({
         Name: newMusicName,
         url: newMusicUrl,
       });
@@ -151,7 +91,7 @@ const MusicStreamScreen = ({ navigation }) => {
       const { Name, Location, url } = selectedStation;
       try {
         const result = await Share.share({
-          message: `Check out this Music station:\n${Name}\nURL: ${url}`,
+          message: `Check out this URL:\n${Name}\nURL: ${url}`,
         });
         if (result.action === Share.sharedAction) {
           if (result.activityType) {
@@ -203,14 +143,7 @@ const MusicStreamScreen = ({ navigation }) => {
         <Text style={styles.cardName}>{item.Name}</Text>
         <Text style={styles.cardLocation}>{item.Location}</Text>
       </View>
-      <TouchableOpacity onPress={() => toggleFavorite(item)}>
-        {isFavorite(item) ? (
-          <MaterialIcons name="favorite" size={24} color="red" />
-        ) : (
-          <MaterialIcons name="favorite-border" size={24} color="white" />
-        )}
-      </TouchableOpacity>
-      <Menu
+      {/* <Menu
         visible={visible && selectedStation && selectedStation.Name === item.Name}
         onDismiss={hideMenu}
         anchor={
@@ -220,14 +153,14 @@ const MusicStreamScreen = ({ navigation }) => {
         }
       >
         <Menu.Item onPress={handleShare} title="Share" />
-      </Menu>
+      </Menu> */}
     </TouchableOpacity>
   );
 
 
   return (
     <View style={styles.container}>
-         <Text style={styles.Title}>Add or Play your Favorite Music Stream</Text>
+         <Text style={styles.Title}>Your Favorite Streams</Text>
       <View style={styles.searchContainer}>
         <Searchbar
           placeholder="Search Music"
@@ -402,4 +335,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default MusicStreamScreen;
+export default FavoriteScreen;

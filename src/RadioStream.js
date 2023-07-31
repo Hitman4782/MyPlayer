@@ -18,6 +18,55 @@ const RadioStreamScreen = ({ navigation }) => {
   const [showPopup, setShowPopup] = useState(false);
   const [fadeAnim] = useState(new Animated.Value(0));
   const [loading, setLoading] = useState(true); 
+  const [favorites, setFavorites] = useState([]);
+
+
+  useEffect(() => {
+    const unsubscribe = firebase
+      .firestore()
+      .collection('Favorites')
+      .onSnapshot(
+        (snapshot) => {
+          const favoriteStations = snapshot.docs.map((doc) => doc.data());
+          setFavorites(favoriteStations);
+        },
+        (error) => {
+          console.error('Firebase error:', error.message);
+          showToast('Error fetching favorites from Firebase.');
+        }
+      );
+
+    return () => unsubscribe();
+  }, []);
+
+  // Function to check if a station is a favorite
+  const isFavorite = (station) => {
+    return favorites.some((fav) => fav.Name === station.Name && fav.Location === station.Location && fav.url === station.url);
+  };
+
+  // Function to add/remove a station to/from favorites
+  const toggleFavorite = async (station) => {
+    try {
+      const stationRef = firebase.firestore().collection('Favorites');
+      if (isFavorite(station)) {
+        // Remove station from favorites
+        await stationRef.where('Name', '==', station.Name)
+          .where('Location', '==', station.Location)
+          .where('url', '==', station.url)
+          .get()
+          .then((querySnapshot) => {
+            querySnapshot.forEach((doc) => {
+              doc.ref.delete();
+            });
+          });
+      } else {
+        // Add station to favorites
+        await stationRef.add(station);
+      }
+    } catch (error) {
+      console.error('Error adding/removing station from favorites:', error.message);
+    }
+  };
 
   useEffect(() => {
     const unsubscribe = firebase.firestore().collection('RadioStation').onSnapshot(
@@ -147,6 +196,13 @@ const RadioStreamScreen = ({ navigation }) => {
         <Text style={styles.cardName}>{item.Name}</Text>
         <Text style={styles.cardLocation}>{item.Location}</Text>
       </View>
+      <TouchableOpacity onPress={() => toggleFavorite(item)}>
+        {isFavorite(item) ? (
+          <MaterialIcons name="favorite" size={24} color="red" />
+        ) : (
+          <MaterialIcons name="favorite-border" size={24} color="white" />
+        )}
+      </TouchableOpacity>
       <Menu
         visible={visible && selectedStation && selectedStation.Name === item.Name}
         onDismiss={hideMenu}

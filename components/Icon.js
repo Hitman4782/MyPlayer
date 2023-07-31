@@ -12,4 +12,6 @@ export const RepeatOffIcon = (props) => <MaterialCommunityIcons name="repeat-off
 export const RepeatIcon = (props) => <MaterialCommunityIcons name="repeat" size={30} color="#f1304d" />;
 export const ShuffleIcon = (props) => <MaterialIcons name="shuffle-on" size={30} color="#f1304d" />;
 export const ShuffleOffIcon = (props) => <MaterialCommunityIcons name="shuffle" size={30} color="#f1304d" />;
+export const FavoriteBorderIcon = (props) => <MaterialIcons name="favorite-border" size={30} color="#f1304d" />;
+export const FavoriteIcon = (props) => <MaterialIcons name="favorite" size={30} color="#f1304d" />;
 export const MusicNoteIcon = (props) => <MaterialCommunityIcons name="music-note" {...props} />;

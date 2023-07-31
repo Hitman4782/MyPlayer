@@ -8,6 +8,7 @@ import RadioStreamScreen from '../src/RadioStream';
 import StreamScreen from '../src/Stream';
 import Player from '../src/Player';
 import MusicStreamScreen from '../src/MusicStream';
+import FavoriteScreen from '../src/Favorites';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -22,6 +23,7 @@ const MainNavigator = () => {
         <Stack.Screen name="Radio Stream" component={RadioStreamScreen} options={{ headerShown: false }} />
         <Stack.Screen name="Music Stream" component={MusicStreamScreen} options={{ headerShown: false }} />
         <Stack.Screen name="Player" component={Player} options={{ headerShown: false }} />
+        <Stack.Screen name="Favorites" component={FavoriteScreen} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
   );

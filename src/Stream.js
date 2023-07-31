@@ -3,21 +3,24 @@ import { View, Text, StatusBar, StyleSheet, } from "react-native";
 import MaterialTabs from "react-native-material-tabs";
 import RadioStreamScreen from "./RadioStream";
 import MusicStreamScreen from "./MusicStream";
+import FavoriteScreen from "./Favorites";
 
 const Home = ({ navigation }) => {
   const [selectedTab, setSelectedTab] = useState(0);
 
   let showList;
   if (selectedTab === 0) {
-    showList = <RadioStreamScreen navigation={navigation} />;
+    showList = <FavoriteScreen navigation={navigation} />;
   } else if (selectedTab === 1) {
-    showList = <MusicStreamScreen navigation={navigation} />;
+    showList = <RadioStreamScreen navigation={navigation} />;
+  }else if (selectedTab === 2) {
+    showList = <MusicStreamScreen navigation={navigation} />; 
   }
   return (
     <View style={styles.container}>
       
         <MaterialTabs
-          items={["Radio Stream", "Music Stream"]}
+          items={["Favorites", "Radio Stream", "Music Stream"]}
           selectedIndex={selectedTab}
           onChange={setSelectedTab}
           barColor="#44486A"
