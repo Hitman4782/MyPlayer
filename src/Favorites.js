@@ -160,7 +160,7 @@ const FavoriteScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-         <Text style={styles.Title}>Your Favorite Streams</Text>
+         <Text style={styles.Title}>Your Playlist</Text>
       <View style={styles.searchContainer}>
         <Searchbar
           placeholder="Search Music"
@@ -197,7 +197,7 @@ const FavoriteScreen = ({ navigation }) => {
             ]}
           >
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Add New Music URL</Text>
+              <Text style={styles.modalTitle}>Add your Favorite Stream URL</Text>
             </View>
             <View style={styles.modalContent}>
               <TextInput
