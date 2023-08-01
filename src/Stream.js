@@ -10,17 +10,17 @@ const Home = ({ navigation }) => {
 
   let showList;
   if (selectedTab === 0) {
-    showList = <FavoriteScreen navigation={navigation} />;
-  } else if (selectedTab === 1) {
     showList = <RadioStreamScreen navigation={navigation} />;
-  }else if (selectedTab === 2) {
+  } else if (selectedTab === 1) {
     showList = <MusicStreamScreen navigation={navigation} />; 
+  }else if (selectedTab === 2) {
+    showList = <FavoriteScreen navigation={navigation} />;
   }
   return (
     <View style={styles.container}>
       
         <MaterialTabs
-          items={["Favorites", "Radio Stream", "Music Stream"]}
+          items={["Radio Stream", "Music Stream", "Favorites"]}
           selectedIndex={selectedTab}
           onChange={setSelectedTab}
           barColor="#44486A"

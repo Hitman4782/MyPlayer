@@ -143,12 +143,12 @@ const MusicStreamScreen = ({ navigation }) => {
 
   const hideMenu = () => setVisible(false);
 
-  const handleShare = async () => {
+  const handleShare = async (selectedStation) => {
     if (selectedStation) {
       const { Name, Location, url } = selectedStation;
       try {
         const result = await Share.share({
-          message: `Check out this Music station:\n${Name}\nURL: ${url}`,
+          message: `Check out this radio station:\n${Name}\nLocation: ${Location}\nURL: ${url}`,
         });
         if (result.action === Share.sharedAction) {
           if (result.activityType) {
@@ -165,6 +165,7 @@ const MusicStreamScreen = ({ navigation }) => {
     }
     hideMenu();
   };
+  
 
   const filteredMusicStations = MusicStations
     .filter(
@@ -207,7 +208,10 @@ const MusicStreamScreen = ({ navigation }) => {
           <MaterialIcons name="favorite-border" size={24} color="white" />
         )}
       </TouchableOpacity>
-      <Menu
+      <TouchableOpacity onPress={() => handleShare(item)} style={styles.iconContainer}>
+          <MaterialIcons name="share" size={24} color="red" />
+      </TouchableOpacity>
+      {/* <Menu
         visible={visible && selectedStation && selectedStation.Name === item.Name}
         onDismiss={hideMenu}
         anchor={
@@ -217,8 +221,9 @@ const MusicStreamScreen = ({ navigation }) => {
         }
       >
         <Menu.Item onPress={handleShare} title="Share" />
-      </Menu>
+      </Menu> */}
     </TouchableOpacity>
+    
   );
 
 
@@ -396,6 +401,9 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  iconContainer:{
+    marginLeft: 8,
   },
 });
 
