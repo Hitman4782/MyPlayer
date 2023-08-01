@@ -17,20 +17,24 @@ const Home = ({ navigation }) => {
       backgroundColor: theme.backgroundColor,
     },
     mainArea: {
-      flex: 11,
+      flex: 1,
+
     },
-    tabContainer: {
+    buttonContainer: {
       flexDirection: "row",
       justifyContent: "space-between",
-      paddingHorizontal: 1,
+      paddingHorizontal: 0,
       paddingTop: 0,
     },
     iconButton: {
-      width: 40,
-      height: 40,
-      top: 4,
+      flexDirection: "row", // Added flexDirection
       alignItems: "center",
       justifyContent: "center",
+      marginLeft: 15,
+    },
+    buttonText: {
+      color: "#219ebc", // You can adjust the color as needed
+      marginLeft: 15, // Adjust the spacing between the icon and text as needed
     },
   });
 
@@ -74,27 +78,32 @@ const Home = ({ navigation }) => {
   } else if (selectedTab === 2) {
     showList = <FavoriteScreen navigation={navigation} />;
   }
+
   return (
     <View style={styles.container}>
-      <View style={styles.tabContainer}>
-        <MaterialTabs
-          items={["Radio Stream", "Music Stream", "Favorites"]}
-          selectedIndex={selectedTab}
-          onChange={setSelectedTab}
-          barColor={theme.backgroundColor}
-          indicatorColor="#219ebc"
-          inactiveTextColor={theme.textColor}
-          activeTextColor="#219ebc"
-          uppercase={false}
-        />
+      <View style={styles.buttonContainer}>
         <TouchableOpacity style={styles.iconButton} onPress={handleThemeToggle}>
           <MaterialCommunityIcons
             name={theme.dark ? "weather-night" : "weather-night"}
             size={22}
             color="#219ebc"
           />
+          <Text style={styles.buttonText}>
+            Toggle Dark/Light mode
+          </Text>
         </TouchableOpacity>
       </View>
+      <MaterialTabs
+        items={["Radio Stream", "Music Stream", "Favorites"]}
+        selectedIndex={selectedTab}
+        onChange={setSelectedTab}
+        barColor={theme.backgroundColor}
+        indicatorColor="#219ebc"
+        inactiveTextColor={theme.textColor}
+        activeTextColor="#219ebc"
+        uppercase={false}
+      />
+
       <View style={styles.mainArea}>{showList}</View>
     </View>
   );
