@@ -127,34 +127,7 @@ const Player = ({ route }) => {
     };
   }, [audioFile, index, audioFiles]);
 
-  const isFavorite = () => {
-    return favorites.some((fav) => fav.Name === RadioName && fav.url === currentAudioUrl);
-  };
 
-  const toggleFavorite = async () => {
-    try {
-      const stationRef = firebase.firestore().collection('Favorites');
-      if (isFavorite()) {
-        // Remove station from favorites
-        await stationRef.where('Name', '==', RadioName)
-          .where('url', '==', currentAudioUrl)
-          .get()
-          .then((querySnapshot) => {
-            querySnapshot.forEach((doc) => {
-              doc.ref.delete();
-            });
-          });
-      } else {
-        // Add station to favorites
-        await stationRef.add({
-          Name: RadioName,
-          url: currentAudioUrl,
-        });
-      }
-    } catch (error) {
-      console.error('Error adding/removing station from favorites:', error.message);
-    }
-  };
 
   useEffect(() => {
     let intervalObj;
@@ -221,6 +194,35 @@ const Player = ({ route }) => {
     }
   }, [isRouteRadio]);
 
+  const toggleFavorite = async () => {
+    try {
+      const stationRef = firebase.firestore().collection('Favorites');
+      if (isFavorite()) {
+        // Remove station from favorites
+        await stationRef.where('Name', '==', RadioName)
+          .where('url', '==', currentAudioUrl)
+          .get()
+          .then((querySnapshot) => {
+            querySnapshot.forEach((doc) => {
+              doc.ref.delete();
+            });
+          });
+      } else {
+        // Add station to favorites
+        await stationRef.add({
+          Name: RadioName,
+          url: currentAudioUrl,
+        });
+      }
+    } catch (error) {
+      console.error('Error adding/removing station from favorites:', error.message);
+    }
+  };
+
+  const isFavorite = () => {
+    return favorites.some((fav) => fav.Name === RadioName && fav.url === currentAudioUrl);
+  };
+
 
   const handlePlayPause = async () => {
     try {
@@ -257,7 +259,7 @@ const Player = ({ route }) => {
       const nextIndex = currentRadioIndex + 1;
       if (nextIndex < radioStations.length) {
         const nextStation = radioStations[nextIndex];
-        setCurrentRadioIndex(nextIndex); // Update the current radio station index
+        setCurrentRadioIndex(nextIndex);
         setIsPlaying(false);
         loadSound(nextStation.url);
         setIsRadioName(nextStation.Name); // Update the radio name
@@ -275,7 +277,7 @@ const Player = ({ route }) => {
 
       if (nextIndex < audioFiles.length) {
         const nextAudioFile = audioFiles[nextIndex];
-        setCurrentIndex(nextIndex); // Update the current regular audio track index
+        setCurrentIndex(nextIndex); 
         setIsPlaying(false);
         setIsRadioName(null); // Set radio name to null for regular audio tracks
         loadSound(nextAudioFile.uri);
@@ -292,7 +294,7 @@ const Player = ({ route }) => {
       const previousIndex = currentRadioIndex - 1;
       if (previousIndex >= 0) {
         const previousStation = radioStations[previousIndex];
-        setCurrentRadioIndex(previousIndex); // Update the current radio station index
+        setCurrentRadioIndex(previousIndex); 
         setIsPlaying(false);
         loadSound(previousStation.url);
         setIsRadioName(previousStation.Name); // Update the radio name
@@ -304,7 +306,7 @@ const Player = ({ route }) => {
       const previousIndex = currentIndex - 1;
       if (previousIndex >= 0) {
         const previousAudioFile = audioFiles[previousIndex];
-        setCurrentIndex(previousIndex); // Update the current regular audio track index
+        setCurrentIndex(previousIndex); 
         setIsPlaying(false);
         setIsRadioName(null); // Set radio name to null for regular audio tracks
         loadSound(previousAudioFile.uri);
@@ -313,7 +315,6 @@ const Player = ({ route }) => {
       }
     }
   };
-
 
   const handleSliderValueChange = (value) => {
     setPosition(value);

@@ -55,12 +55,11 @@ const MusicStreamScreen = ({ navigation }) => {
     return favorites.some((fav) => fav.Name === station.Name && fav.url === station.url);
   };
 
-  // Function to add/remove a station to/from favorites
+  
   const toggleFavorite = async (station) => {
     try {
       const stationRef = firebase.firestore().collection('Favorites');
       if (isFavorite(station)) {
-        // Remove station from favorites
         await stationRef.where('Name', '==', station.Name)
           .where('url', '==', station.url)
           .get()
@@ -70,7 +69,6 @@ const MusicStreamScreen = ({ navigation }) => {
             });
           });
       } else {
-        // Add station to favorites
         await stationRef.add(station);
       }
     } catch (error) {
@@ -125,11 +123,10 @@ const MusicStreamScreen = ({ navigation }) => {
         Name: newMusicName,
         url: newMusicUrl,
       });
-      // Clear the input fields after successful addition
       setNewMusicName('');
       setNewMusicUrl('');
       Alert.alert('Success', 'New Music station added!');
-      setModalVisible(false); // Hide the modal after successful addition
+      setModalVisible(false); 
     } catch (error) {
       console.error('Error adding station:', error.message);
     }

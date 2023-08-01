@@ -65,11 +65,10 @@ const FavoriteScreen = ({ navigation }) => {
         Name: newMusicName,
         url: newMusicUrl,
       });
-      // Clear the input fields after successful addition
       setNewMusicName('');
       setNewMusicUrl('');
       Alert.alert('Success', 'New Music station added!');
-      setModalVisible(false); // Hide the modal after successful addition
+      setModalVisible(false); 
     } catch (error) {
       console.error('Error adding station:', error.message);
     }
@@ -86,28 +85,28 @@ const FavoriteScreen = ({ navigation }) => {
 
   const hideMenu = () => setVisible(false);
 
-  const handleShare = async () => {
-    if (selectedStation) {
-      const { Name, Location, url } = selectedStation;
-      try {
-        const result = await Share.share({
-          message: `Check out this URL:\n${Name}\nURL: ${url}`,
-        });
-        if (result.action === Share.sharedAction) {
-          if (result.activityType) {
-            // Shared via activity type (e.g. WhatsApp)
-          } else {
-            // Shared
-          }
-        } else if (result.action === Share.dismissedAction) {
-          // Dismissed
-        }
-      } catch (error) {
-        console.error('Error sharing:', error.message);
-      }
-    }
-    hideMenu();
-  };
+  // const handleShare = async () => {
+  //   if (selectedStation) {
+  //     const { Name, Location, url } = selectedStation;
+  //     try {
+  //       const result = await Share.share({
+  //         message: `Check out this URL:\n${Name}\nURL: ${url}`,
+  //       });
+  //       if (result.action === Share.sharedAction) {
+  //         if (result.activityType) {
+  //           // Shared via activity type (e.g. WhatsApp)
+  //         } else {
+  //           // Shared
+  //         }
+  //       } else if (result.action === Share.dismissedAction) {
+  //         // Dismissed
+  //       }
+  //     } catch (error) {
+  //       console.error('Error sharing:', error.message);
+  //     }
+  //   }
+  //   hideMenu();
+  // };
 
   const filteredMusicStations = MusicStations
     .filter(

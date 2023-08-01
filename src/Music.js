@@ -12,8 +12,8 @@ class AudioListScreen extends Component {
       audioFiles: [],
       allAudioFiles: [],
       searchQuery: '',
-      menuVisible: false, // Track if the menu is visible or not
-      selectedAudioFile: null, // Store the selected audio file for the menu
+      menuVisible: false, 
+      selectedAudioFile: null, 
     };
   }
 
@@ -22,12 +22,11 @@ class AudioListScreen extends Component {
   }
 
   handleAddToPlaylist = (audioFile) => {
-    // Show the menu when "Add to Playlist" is clicked
+   
     this.setState({ menuVisible: true, selectedAudioFile: audioFile });
   };
 
   handleMenuClose = () => {
-    // Close the menu
     this.setState({ menuVisible: false, selectedAudioFile: null });
   };
 
@@ -89,7 +88,7 @@ class AudioListScreen extends Component {
     this.props.navigation.navigate('Player', {
       audioFile: {
         ...audioFile,
-        name: audioFile.fileName // Add the fileName as Name in the navigation params
+        name: audioFile.fileName 
       },
       index,
       audioFiles: this.state.audioFiles,

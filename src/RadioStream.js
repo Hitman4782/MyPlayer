@@ -39,17 +39,15 @@ const RadioStreamScreen = ({ navigation }) => {
     return () => unsubscribe();
   }, []);
 
-  // Function to check if a station is a favorite
   const isFavorite = (station) => {
     return favorites.some((fav) => fav.Name === station.Name && fav.Location === station.Location && fav.url === station.url);
   };
 
-  // Function to add/remove a station to/from favorites
+ 
   const toggleFavorite = async (station) => {
     try {
       const stationRef = firebase.firestore().collection('Favorites');
       if (isFavorite(station)) {
-        // Remove station from favorites
         await stationRef.where('Name', '==', station.Name)
           .where('Location', '==', station.Location)
           .where('url', '==', station.url)
@@ -60,7 +58,6 @@ const RadioStreamScreen = ({ navigation }) => {
             });
           });
       } else {
-        // Add station to favorites
         await stationRef.add(station);
       }
     } catch (error) {
@@ -116,12 +113,12 @@ const RadioStreamScreen = ({ navigation }) => {
         Location: newStationLocation,
         url: newStationUrl,
       });
-      // Clear the input fields after successful addition
+      
       setNewStationName('');
       setNewStationLocation('');
       setNewStationUrl('');
       Alert.alert('Success', 'New radio station added!');
-      setModalVisible(false); // Hide the modal after successful addition
+      setModalVisible(false); 
     } catch (error) {
       console.error('Error adding station:', error.message);
     }

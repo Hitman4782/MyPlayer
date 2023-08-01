@@ -2,7 +2,7 @@ import React from 'react';
 import { IconButton } from 'react-native-paper';
 import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 
-// Replace the names of the icons with the corresponding icon names you want to use from MaterialCommunityIcons
+
 export const PlayIcon = (props) => <MaterialCommunityIcons name="play" size={30} color="#f1304d" />;
 export const PauseIcon = (props) => <MaterialCommunityIcons name="pause" size={30} color="#f1304d" />;
 export const StopIcon = (props) => <MaterialCommunityIcons name="stop" size={30} color="#f1304d" />;
