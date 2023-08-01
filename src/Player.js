@@ -86,12 +86,28 @@ const Player = ({ route }) => {
     setIsRadio(audioFile.isRadio);
     setIsRadioName(audioFile.name);
 
-    // Check if isRadio is true in the route params
     if (audioFile.isRadio) {
+      // Reset values when isRadio becomes true in the route params
+      setIsPlaying(false);
+      setIsSeeking(false);
+      setPosition(0);
+      setDuration(0);
+      setCurrentRadioIndex(RadioIndex); // You may or may not want to set this value based on your requirement
       loadSound(audioFile.uri, true);
     } else {
       loadSound(audioFile.uri);
     }
+
+    const unsubscribeFavorites = firebase.firestore().collection('Favorites').onSnapshot(
+      (snapshot) => {
+        const favoriteStations = snapshot.docs.map((doc) => doc.data());
+        setFavorites(favoriteStations);
+      },
+      (error) => {
+        console.error('Firebase error:', error.message);
+        showToast('Error fetching favorites from Firebase.');
+      }
+    );
 
     const setAudioMode = async () => {
       try {
@@ -109,16 +125,7 @@ const Player = ({ route }) => {
     };
     setAudioMode();
 
-    const unsubscribeFavorites = firebase.firestore().collection('Favorites').onSnapshot(
-      (snapshot) => {
-        const favoriteStations = snapshot.docs.map((doc) => doc.data());
-        setFavorites(favoriteStations);
-      },
-      (error) => {
-        console.error('Firebase error:', error.message);
-        showToast('Error fetching favorites from Firebase.');
-      }
-    );
+
 
     return () => {
       sound.current.unloadAsync();
@@ -169,30 +176,7 @@ const Player = ({ route }) => {
     };
   }, [isSeeking, isPlaying, isRepeatEnabled]);
 
-  // New useEffect hook to handle changes in the isRadio parameter from the route
-  useEffect(() => {
-    if (route.params && route.params.isRadio) {
-      setIsRouteRadio(true);
-    } else {
-      setIsRouteRadio(false);
-    }
-  }, [route.params]);
 
-  // New useEffect hook to handle clearing values when isRadio becomes true in the route
-  useEffect(() => {
-    if (isRouteRadio) {
-      setIsPlaying(false);
-      setIsSeeking(false);
-      setPosition(0);
-      setDuration(0);
-      setCurrentIndex(null);
-      setCurrentAudioFile(null);
-      setCurrentAudioUrl(null);
-      setIsRepeatEnabled(false);
-      setIsShuffleEnabled(false);
-      setCurrentRadioIndex(null);
-    }
-  }, [isRouteRadio]);
 
   const toggleFavorite = async () => {
     try {
