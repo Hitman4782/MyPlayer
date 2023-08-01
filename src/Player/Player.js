@@ -3,12 +3,16 @@ import { View, StyleSheet } from 'react-native';
 import { Button, Text, IconButton } from 'react-native-paper';
 import Slider from '@react-native-community/slider';
 import { Audio } from 'expo-av';
-import { firebase } from '../components/firebase';
-import { PlayIcon, PauseIcon, StopIcon, NextIcon, PreviousIcon, MusicNoteIcon, RepeatIcon, RepeatOffIcon, ShuffleIcon, ShuffleOffIcon, FavoriteBorderIcon, FavoriteIcon } from '../components/Icon';
+import { firebase } from '../../components/firebase';
+import { PlayIcon, PauseIcon, StopIcon, NextIcon, PreviousIcon, MusicNoteIcon, RepeatIcon, RepeatOffIcon, ShuffleIcon, ShuffleOffIcon, FavoriteBorderIcon, FavoriteIcon } from '../../components/Icon';
+import { useTheme } from '../../components/ThemeContext';
+import { getStyles } from './styles';
 
 const Player = ({ route }) => {
   const { audioFile, index, audioFiles, RadioIndex, radioStations } = route.params || {};
-  //console.log(RadioIndex);
+  const { theme, toggleTheme } = useTheme();
+  const styles = getStyles(theme);
+  
   if (!audioFile) {
     return (
       // to display when no audio or radio is being played
@@ -29,7 +33,7 @@ const Player = ({ route }) => {
     );
   }
 
-  const sound = useRef(new Audio.Sound());
+  
   const [isRouteRadio, setIsRouteRadio] = useState(false);
   const isSliderDisabled = duration <= 0;
   const [isPlaying, setIsPlaying] = useState(false);
@@ -48,36 +52,42 @@ const Player = ({ route }) => {
   const [isMusic, setIsMusic] = useState(!audioFile.isRadio);
   const [favorites, setFavorites] = useState([]);
 
-
-  const loadSound = async (uri, shouldPlay = true) => {
-    try {
-      console.log('Loading sound...');
-      await sound.current.unloadAsync();
-
-      const { sound: loadedSound, status } = await Audio.Sound.createAsync(
-        { uri },
-        { shouldPlay: shouldPlay }
-      );
-      sound.current = loadedSound;
-      setIsPlaying(shouldPlay);
-      setDuration(status.durationMillis);
-
-      // Update the current audio URL only when it's different
-      if (currentAudioUrl !== uri) {
-        setCurrentAudioUrl(uri);
-        // Update the current audio file metadata
-        if (audioFiles) {
-          const audioIndex = audioFiles.findIndex((audio) => audio.uri === uri);
-          setCurrentAudioFile(audioFiles[audioIndex]);
-        }
+  useEffect(() => {
+    // Set up audio mode and other initial configurations
+    const setAudioMode = async () => {
+      try {
+        await Audio.setAudioModeAsync({
+          allowsRecordingIOS: false,
+          //interruptionModeIOS: Audio.INTERRUPTION_MODE_IOS_DO_NOT_MIX,
+          playsInSilentModeIOS: true,
+          //interruptionModeAndroid: Audio.INTERRUPTION_MODE_ANDROID_DO_NOT_MIX,
+          shouldDuckAndroid: true,
+          staysActiveInBackground: true,
+        });
+      } catch (error) {
+        console.error('Error setting audio mode:', error);
       }
+    };
+    setAudioMode();
 
+    // Subscribe to Favorites collection in Firebase
+    const unsubscribeFavorites = firebase.firestore().collection('Favorites').onSnapshot(
+      (snapshot) => {
+        const favoriteStations = snapshot.docs.map((doc) => doc.data());
+        setFavorites(favoriteStations);
+      },
+      (error) => {
+        console.error('Firebase error:', error.message);
+        showToast('Error fetching favorites from Firebase.');
+      }
+    );
 
-      console.log('Sound loaded successfully. Duration:', status.durationMillis);
-    } catch (error) {
-      console.error('Error loading audio:', error);
-    }
-  };
+    return () => {
+      sound.current.unloadAsync();
+      clearInterval(intervalObj);
+      unsubscribeFavorites();
+    };
+  }, []);
 
   useEffect(() => {
     setCurrentAudioFile(audioFile);
@@ -97,44 +107,7 @@ const Player = ({ route }) => {
     } else {
       loadSound(audioFile.uri);
     }
-
-    const unsubscribeFavorites = firebase.firestore().collection('Favorites').onSnapshot(
-      (snapshot) => {
-        const favoriteStations = snapshot.docs.map((doc) => doc.data());
-        setFavorites(favoriteStations);
-      },
-      (error) => {
-        console.error('Firebase error:', error.message);
-        showToast('Error fetching favorites from Firebase.');
-      }
-    );
-
-    const setAudioMode = async () => {
-      try {
-        await Audio.setAudioModeAsync({
-          allowsRecordingIOS: false,
-          //interruptionModeIOS: Audio.INTERRUPTION_MODE_IOS_DO_NOT_MIX,
-          playsInSilentModeIOS: true,
-          //interruptionModeAndroid: Audio.INTERRUPTION_MODE_ANDROID_DO_NOT_MIX,
-          shouldDuckAndroid: true,
-          staysActiveInBackground: true,
-        });
-      } catch (error) {
-        console.error('Error setting audio mode:', error);
-      }
-    };
-    setAudioMode();
-
-
-
-    return () => {
-      sound.current.unloadAsync();
-      clearInterval(intervalObj);
-      unsubscribeFavorites();
-    };
-  }, [audioFile, index, audioFiles]);
-
-
+  }, [audioFile, index, audioFiles, RadioIndex, radioStations]);
 
   useEffect(() => {
     let intervalObj;
@@ -175,6 +148,37 @@ const Player = ({ route }) => {
       clearInterval(intervalObj);
     };
   }, [isSeeking, isPlaying, isRepeatEnabled]);
+
+  const sound = useRef(new Audio.Sound());
+  const loadSound = async (uri, shouldPlay = true) => {
+    try {
+      console.log('Loading sound...');
+      await sound.current.unloadAsync();
+
+      const { sound: loadedSound, status } = await Audio.Sound.createAsync(
+        { uri },
+        { shouldPlay: shouldPlay }
+      );
+      sound.current = loadedSound;
+      setIsPlaying(shouldPlay);
+      setDuration(status.durationMillis);
+
+      // Update the current audio URL only when it's different
+      if (currentAudioUrl !== uri) {
+        setCurrentAudioUrl(uri);
+        // Update the current audio file metadata
+        if (audioFiles) {
+          const audioIndex = audioFiles.findIndex((audio) => audio.uri === uri);
+          setCurrentAudioFile(audioFiles[audioIndex]);
+        }
+      }
+
+      console.log('Sound loaded successfully. Duration:', status.durationMillis);
+    } catch (error) {
+      console.error('Error loading audio:', error);
+    }
+  };
+
 
 
 
@@ -384,40 +388,6 @@ const Player = ({ route }) => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: "#2D3047",
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  controls: {
-    flexDirection: 'row',
-    marginTop: 20,
-  },
-  musicIconContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  radioName: {
-    fontSize: 18,
-    color: '#CCCEDE',
-    fontWeight: 'bold',
-    marginTop: 10,
-  },
-  audioName: {
-    color: '#CCCEDE',
-    marginTop: 10,
-    fontSize: 16,
-    paddingHorizontal: 50,
-  },
-  simpleText: {
-    color: '#CCCEDE',
-    marginTop: 10,
-    paddingHorizontal: 50,
-  },
-});
+
 
 export default Player;

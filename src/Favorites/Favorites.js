@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, FlatList, TouchableOpacity, Text, Animated, Alert, Modal, TextInput, ActivityIndicator, ToastAndroid  } from 'react-native';
-import { Searchbar, Menu, Divider } from 'react-native-paper';
-import { firebase } from '../components/firebase';
+import { View, StyleSheet, FlatList, TouchableOpacity, Text, Animated, Alert, Modal, TextInput, ActivityIndicator, ToastAndroid } from 'react-native';
+import { Searchbar, Menu } from 'react-native-paper';
+import { firebase } from '../../components/firebase';
 import { Share } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import NetInfo from '@react-native-community/netinfo';
+import { useTheme } from "../../components/ThemeContext"
+import { getStyles } from './styles';
 
 const FavoriteScreen = ({ navigation }) => {
   const [MusicStations, setMusicStations] = useState([]);
@@ -17,6 +19,10 @@ const FavoriteScreen = ({ navigation }) => {
   const [showPopup, setShowPopup] = useState(false);
   const [fadeAnim] = useState(new Animated.Value(0));
   const [loading, setLoading] = useState(true); 
+  
+  const { theme, toggleTheme } = useTheme();
+  const styles = getStyles(theme);
+  
 
   useEffect(() => {
     const unsubscribe = firebase.firestore().collection('Favorites').onSnapshot(
@@ -135,6 +141,7 @@ const FavoriteScreen = ({ navigation }) => {
   
   const renderMusicStationCard = ({ item, index }) => (
     <TouchableOpacity
+    key={index}
       style={styles.card}
       onPress={() => handleStartPlaying(item.url, item.Name, item.index)}
     >
@@ -166,11 +173,11 @@ const FavoriteScreen = ({ navigation }) => {
           onChangeText={handleSearch}
           value={searchQuery}
           style={{
-            backgroundColor: '#44486A', 
+            backgroundColor: theme.cardBackground,
           }}
-          placeholderTextColor="#CCCEDE"
-          iconColor="#CCCEDE"
-          inputStyle={{ color: '#CCCEDE' }}
+          placeholderTextColor={theme.textColor}
+          iconColor={theme.textColor}
+          inputStyle={{ color: theme.textColor }}
         />
       </View>
 
@@ -179,7 +186,7 @@ const FavoriteScreen = ({ navigation }) => {
       ) : (
         <FlatList
           data={filteredMusicStations} 
-          keyExtractor={(item) => item.Name}
+          keyExtractor={(item, index) => index.toString()}
           renderItem={renderMusicStationCard}
           contentContainerStyle={styles.listContainer}
         />
@@ -200,14 +207,14 @@ const FavoriteScreen = ({ navigation }) => {
             </View>
             <View style={styles.modalContent}>
               <TextInput
-                style={[styles.input, { backgroundColor: '#44486A', color: '#CCCEDE' }]}
+               style={[styles.input, { backgroundColor: theme.inputColor, color: theme.textColor }]}
                 placeholder="Name"
                 value={newMusicName}
                 onChangeText={setNewMusicName}
                 placeholderTextColor="#CCCEDE"
               />
               <TextInput
-                style={[styles.input, { backgroundColor: '#44486A', color: '#CCCEDE' }]}
+                style={[styles.input, { backgroundColor: theme.inputColor, color: theme.textColor }]}
                 placeholder="URL"
                 value={newMusicUrl}
                 onChangeText={setNewMusicUrl}
@@ -230,108 +237,6 @@ const FavoriteScreen = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-    backgroundColor: "#2D3047",
-  },
-  addButton: {
-    position: 'absolute',
-    right: 20,
-    bottom: 20,
-    backgroundColor: '#f1304d',
-    borderRadius: 50,
-    width: 50,
-    height: 50,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  searchContainer: {
-    paddingBottom: 10,
-  },
-  listContainer: {
-    paddingBottom: 16,
-  },
-  card: {
-    backgroundColor: '#44486A',
-    padding: 16,
-    marginBottom: 16,
-    borderRadius: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between', 
-  },
-  MusicInfo: {
-    flex: 1,
-  },
-  cardName: {
-    fontSize: 18,
-    color: '#CCCEDE',
-    fontWeight: 'bold',
-  },
-  cardLocation: {
-    fontSize: 14,
-    color: '#CCCEDE',
-  },
-  Title: {
-    fontSize: 18,
-    bottom: 5,
-    textAlign: 'center',
-    color: '#CCCEDE',
-    fontWeight: 'bold',
-    paddingBottom: 5,
-  },
-  dots: {
-    fontSize: 24,
-    color: '#CCCEDE',
-    paddingHorizontal: 8,
-  },
-  modalBackground: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalContainer: {
-    backgroundColor: '#2D3047',
-    borderRadius: 8,
-    padding: 16,
-    width: '80%',
-  },
-  modalHeader: {
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#CCCEDE',
-  },
-  modalContent: {
-    marginBottom: 16,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#CCC',
-    borderRadius: 4,
-    marginBottom: 12,
-    padding: 8,
-    color: '#CCCEDE',
-  },
-  Button: {
-    backgroundColor: '#f1304d',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 5,
-    marginBottom: 5,
-  },
-  ButtonText: {
-    textAlign: 'center',
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-});
+
 
 export default FavoriteScreen;

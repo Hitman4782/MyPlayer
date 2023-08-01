@@ -3,12 +3,14 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
-import Music from '../src/Music';
-import RadioStreamScreen from '../src/RadioStream';
-import StreamScreen from '../src/Stream';
-import Player from '../src/Player';
-import MusicStreamScreen from '../src/MusicStream';
-import FavoriteScreen from '../src/Favorites';
+import Music from '../src/Music/Music';
+import AudioListScreenWithTheme from '../src/Music/MusicScreenThemed';
+import RadioStreamScreen from '../src/RadioStream/RadioStream';
+import StreamScreen from '../src/Stream/Stream';
+import Player from '../src/Player/Player';
+import MusicStreamScreen from '../src/MusicStream/MusicStream';
+import FavoriteScreen from '../src/Favorites/Favorites';
+import { useTheme } from './ThemeContext';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -31,6 +33,7 @@ const MainNavigator = () => {
 
 
 const TabNavigator = () => {
+  const { theme } = useTheme();
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -48,9 +51,9 @@ const TabNavigator = () => {
           return <Ionicons name={iconName} size={size} color={color} />;
         },
         tabBarActiveTintColor: '#f1304d',
-        tabBarInactiveTintColor: '#CCCEDE',
+        tabBarInactiveTintColor: theme.BottomIcon,
         tabBarStyle: {
-          backgroundColor: '#44486A',
+          backgroundColor: theme.BottomNavigation,
           borderTopColor: 'gray',
          
         },
@@ -58,7 +61,7 @@ const TabNavigator = () => {
     >
       <Tab.Screen name="Stream" component={StreamScreen} options={{ headerShown: false }}/>
       <Tab.Screen name="Player" component={Player} options={{ headerShown: false }} />
-      <Tab.Screen name="Music" component={Music} options={{ headerShown: false }} />
+      <Tab.Screen name="Music" component={AudioListScreenWithTheme} options={{ headerShown: false }} />
     </Tab.Navigator>
   );
 };

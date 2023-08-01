@@ -1,55 +1,71 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, FlatList, TouchableOpacity, Text, Animated, Alert, Modal, TextInput, ActivityIndicator, ToastAndroid  } from 'react-native';
 import { Searchbar, Menu, Divider } from 'react-native-paper';
-import { firebase } from '../components/firebase';
+import { firebase } from '../../components/firebase';
 import { Share } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import NetInfo from '@react-native-community/netinfo';
+import { useTheme } from '../../components/ThemeContext';
+import { getStyles } from './styles';
 
-const RadioStreamScreen = ({ navigation }) => {
-  const [radioStations, setRadioStations] = useState([]);
+const MusicStreamScreen = ({ navigation }) => {
+  const [MusicStations, setMusicStations] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [visible, setVisible] = useState(false);
   const [selectedStation, setSelectedStation] = useState(null);
-  const [newStationName, setNewStationName] = useState('');
-  const [newStationLocation, setNewStationLocation] = useState('');
-  const [newStationUrl, setNewStationUrl] = useState('');
+  const [newMusicName, setNewMusicName] = useState('');
+  const [newMusicUrl, setNewMusicUrl] = useState('');
   const [isModalVisible, setModalVisible] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const [fadeAnim] = useState(new Animated.Value(0));
   const [loading, setLoading] = useState(true); 
   const [favorites, setFavorites] = useState([]);
-
+  const { theme, toggleTheme } = useTheme();
+  const styles = getStyles(theme);
+  
 
   useEffect(() => {
-    const unsubscribe = firebase
-      .firestore()
-      .collection('Favorites')
-      .onSnapshot(
-        (snapshot) => {
-          const favoriteStations = snapshot.docs.map((doc) => doc.data());
-          setFavorites(favoriteStations);
-        },
-        (error) => {
-          console.error('Firebase error:', error.message);
-          showToast('Error fetching favorites from Firebase.');
-        }
-      );
+    const unsubscribeStations = firebase.firestore().collection('MusicStream').onSnapshot(
+      (snapshot) => {
+        const stations = snapshot.docs.map((doc) => doc.data());
+        setMusicStations(stations);
+        setLoading(false);
+      },
+      (error) => {
+        console.error('Firebase error:', error.message);
+        showToast('Error fetching data from Firebase.');
+        setLoading(false);
+      }
+    );
 
-    return () => unsubscribe();
+    const unsubscribeFavorites = firebase.firestore().collection('Favorites').onSnapshot(
+      (snapshot) => {
+        const favoriteStations = snapshot.docs.map((doc) => doc.data());
+        setFavorites(favoriteStations);
+      },
+      (error) => {
+        console.error('Firebase error:', error.message);
+        showToast('Error fetching favorites from Firebase.');
+      }
+    );
+
+    return () => {
+      unsubscribeStations();
+      unsubscribeFavorites();
+    };
   }, []);
 
+  // Function to check if a station is a favorite
   const isFavorite = (station) => {
-    return favorites.some((fav) => fav.Name === station.Name && fav.Location === station.Location && fav.url === station.url);
+    return favorites.some((fav) => fav.Name === station.Name && fav.url === station.url);
   };
 
- 
+  
   const toggleFavorite = async (station) => {
     try {
       const stationRef = firebase.firestore().collection('Favorites');
       if (isFavorite(station)) {
         await stationRef.where('Name', '==', station.Name)
-          .where('Location', '==', station.Location)
           .where('url', '==', station.url)
           .get()
           .then((querySnapshot) => {
@@ -66,10 +82,10 @@ const RadioStreamScreen = ({ navigation }) => {
   };
 
   useEffect(() => {
-    const unsubscribe = firebase.firestore().collection('RadioStation').onSnapshot(
+    const unsubscribe = firebase.firestore().collection('MusicStream').onSnapshot(
       (snapshot) => {
         const stations = snapshot.docs.map((doc) => doc.data());
-        setRadioStations(stations);
+        setMusicStations(stations);
         setLoading(false);
       },
       (error) => {
@@ -101,23 +117,20 @@ const RadioStreamScreen = ({ navigation }) => {
       navigation.navigate('Player', {
         audioFile: { uri: url, isRadio: true, name: name },
         RadioIndex: index,
-        radioStations: filteredRadioStations, 
+        radioStations: filteredMusicStations, 
       });
     }
   };
 
   const handleAddStation = async () => {
     try {
-      await firebase.firestore().collection('RadioStation').add({
-        Name: newStationName,
-        Location: newStationLocation,
-        url: newStationUrl,
+      await firebase.firestore().collection('MusicStream').add({
+        Name: newMusicName,
+        url: newMusicUrl,
       });
-      
-      setNewStationName('');
-      setNewStationLocation('');
-      setNewStationUrl('');
-      Alert.alert('Success', 'New radio station added!');
+      setNewMusicName('');
+      setNewMusicUrl('');
+      Alert.alert('Success', 'New Music station added!');
       setModalVisible(false); 
     } catch (error) {
       console.error('Error adding station:', error.message);
@@ -128,10 +141,10 @@ const RadioStreamScreen = ({ navigation }) => {
     setSearchQuery(query);
   };
 
-  const showMenu = (station) => {
-    setSelectedStation(station);
-    setVisible(true);
-  };
+  // const showMenu = (station) => {
+  //   setSelectedStation(station);
+  //   setVisible(true);
+  // };
 
   const hideMenu = () => setVisible(false);
 
@@ -157,12 +170,12 @@ const RadioStreamScreen = ({ navigation }) => {
     }
     hideMenu();
   };
+  
 
-  const filteredRadioStations = radioStations
+  const filteredMusicStations = MusicStations
     .filter(
       (station) =>
-        station.Name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        station.Location.toLowerCase().includes(searchQuery.toLowerCase())
+        station.Name.toLowerCase().includes(searchQuery.toLowerCase())
     )
     .map((station, index) => ({ ...station, index })); 
 
@@ -184,12 +197,13 @@ const RadioStreamScreen = ({ navigation }) => {
     }).start(() => setShowPopup(false));
   };
   
-  const renderRadioStationCard = ({ item, index }) => (
+  const renderMusicStationCard = ({ item, index }) => (
     <TouchableOpacity
+    key={index}
       style={styles.card}
       onPress={() => handleStartPlaying(item.url, item.Name, item.index)}
     >
-      <View style={styles.radioInfo}>
+      <View style={styles.MusicInfo}>
         <Text style={styles.cardName}>{item.Name}</Text>
         <Text style={styles.cardLocation}>{item.Location}</Text>
       </View>
@@ -197,7 +211,7 @@ const RadioStreamScreen = ({ navigation }) => {
         {isFavorite(item) ? (
           <MaterialIcons name="favorite" size={24} color="red" />
         ) : (
-          <MaterialIcons name="favorite-border" size={24} color="white" />
+          <MaterialIcons name="favorite-border" size={24} color="red" />
         )}
       </TouchableOpacity>
       <TouchableOpacity onPress={() => handleShare(item)} style={styles.iconContainer}>
@@ -215,23 +229,23 @@ const RadioStreamScreen = ({ navigation }) => {
         <Menu.Item onPress={handleShare} title="Share" />
       </Menu> */}
     </TouchableOpacity>
+    
   );
-
 
   return (
     <View style={styles.container}>
-      <Text style={styles.Title}>Add or Play your Favorite Radio Stream</Text>
+         <Text style={styles.Title}>Add or Play your Favorite Music Stream</Text>
       <View style={styles.searchContainer}>
         <Searchbar
-          placeholder="Search Radio"
+          placeholder="Search Music"
           onChangeText={handleSearch}
           value={searchQuery}
           style={{
-            backgroundColor: '#44486A', 
+            backgroundColor: theme.cardBackground,
           }}
-          placeholderTextColor="#CCCEDE"
-          iconColor="#CCCEDE"
-          inputStyle={{ color: '#CCCEDE' }}
+          placeholderTextColor={theme.textColor}
+          iconColor={theme.textColor}
+          inputStyle={{ color: theme.textColor }}
         />
       </View>
 
@@ -239,9 +253,9 @@ const RadioStreamScreen = ({ navigation }) => {
         <ActivityIndicator color="#f1304d" size="large" />
       ) : (
         <FlatList
-          data={filteredRadioStations} 
-          keyExtractor={(item) => item.Name}
-          renderItem={renderRadioStationCard}
+          data={filteredMusicStations} 
+          keyExtractor={(item, index) => index.toString()}
+          renderItem={renderMusicStationCard}
           contentContainerStyle={styles.listContainer}
         />
       )}
@@ -257,28 +271,21 @@ const RadioStreamScreen = ({ navigation }) => {
             ]}
           >
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Add New Station</Text>
+              <Text style={styles.modalTitle}>Add New Music URL</Text>
             </View>
             <View style={styles.modalContent}>
               <TextInput
-                style={[styles.input, { backgroundColor: '#44486A', color: '#CCCEDE' }]}
+                 style={[styles.input, { backgroundColor: theme.inputColor, color: theme.textColor }]}
                 placeholder="Name"
-                value={newStationName}
-                onChangeText={setNewStationName}
+                value={newMusicName}
+                onChangeText={setNewMusicName}
                 placeholderTextColor="#CCCEDE"
               />
               <TextInput
-                style={[styles.input, { backgroundColor: '#44486A', color: '#CCCEDE' }]}
-                placeholder="Location"
-                value={newStationLocation}
-                onChangeText={setNewStationLocation}
-                placeholderTextColor="#CCCEDE"
-              />
-              <TextInput
-                style={[styles.input, { backgroundColor: '#44486A', color: '#CCCEDE' }]}
+                 style={[styles.input, { backgroundColor: theme.inputColor, color: theme.textColor }]}
                 placeholder="URL"
-                value={newStationUrl}
-                onChangeText={setNewStationUrl}
+                value={newMusicUrl}
+                onChangeText={setNewMusicUrl}
                 placeholderTextColor="#CCCEDE"
               />
               <TouchableOpacity style={styles.Button} onPress={handleAddStation}>
@@ -298,111 +305,6 @@ const RadioStreamScreen = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-    backgroundColor: "#2D3047",
-  },
-  addButton: {
-    position: 'absolute',
-    right: 20,
-    bottom: 20,
-    backgroundColor: '#f1304d',
-    borderRadius: 50,
-    width: 50,
-    height: 50,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  searchContainer: {
-    paddingBottom: 10,
-  },
-  listContainer: {
-    paddingBottom: 16,
-  },
-  card: {
-    backgroundColor: '#44486A',
-    padding: 16,
-    marginBottom: 16,
-    borderRadius: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between', 
-  },
-  radioInfo: {
-    flex: 1,
-  },
-  Title: {
-    fontSize: 18,
-    bottom: 5,
-    textAlign: 'center',
-    color: '#CCCEDE',
-    fontWeight: 'bold',
-    paddingBottom: 5,
-  },
-  cardName: {
-    fontSize: 18,
-    color: '#CCCEDE',
-    fontWeight: 'bold',
-  },
-  cardLocation: {
-    fontSize: 14,
-    color: '#CCCEDE',
-  },
-  dots: {
-    fontSize: 24,
-    color: '#CCCEDE',
-    paddingHorizontal: 8,
-  },
-  modalBackground: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalContainer: {
-    backgroundColor: '#2D3047',
-    borderRadius: 8,
-    padding: 16,
-    width: '80%',
-  },
-  modalHeader: {
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#CCCEDE',
-  },
-  iconContainer:{
-    marginLeft: 8,
-  },
-  modalContent: {
-    marginBottom: 16,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#CCC',
-    borderRadius: 4,
-    marginBottom: 12,
-    padding: 8,
-    color: '#CCCEDE',
-  },
-  Button: {
-    backgroundColor: '#f1304d',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 5,
-    marginBottom: 5,
-  },
-  ButtonText: {
-    textAlign: 'center',
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-});
 
-export default RadioStreamScreen;
+
+export default MusicStreamScreen;

@@ -5,6 +5,7 @@ import * as MediaLibrary from 'expo-media-library';
 import * as FileSystem from 'expo-file-system';
 
 
+
 class AudioListScreen extends Component {
   constructor(props) {
     super(props);
@@ -14,6 +15,7 @@ class AudioListScreen extends Component {
       searchQuery: '',
       menuVisible: false, 
       selectedAudioFile: null, 
+      
     };
   }
 
@@ -95,17 +97,8 @@ class AudioListScreen extends Component {
     });
   };
 
-  // Define a memoized version of the renderItem component
-  MemoizedListItem = React.memo(({ item, index, menuVisible }) => (
-    <List.Item
-      title={`${index + 1}. ${item.fileName}`}
-      description={`${item.title} - ${item.artist}\nDuration: ${this.formatDuration(item.duration)}`}
-      left={(props) => <List.Icon {...props} icon="music-note" color="#CCCEDE" size={30} />}
-      onPress={() => this.handlePlayAudio(item, index)}
-      titleStyle={{ color: '#CCCEDE' }}
-      descriptionStyle={{ color: '#CCCEDE' }}
-    />
-  ));
+
+
 
   formatDuration = (duration) => {
     const minutes = Math.floor(duration / 60);
@@ -130,26 +123,37 @@ class AudioListScreen extends Component {
   };
 
   render() {
-    const { audioFiles, searchQuery, menuVisible  } = this.state;
+    const { audioFiles, searchQuery, menuVisible,} = this.state;
+    const{theme}=this.props
+    const MemoizedListItem = React.memo(({ item, index, menuVisible }) => (
+      <List.Item
+        title={`${index + 1}. ${item.fileName}`}
+        description={`${item.title} - ${item.artist}\nDuration: ${this.formatDuration(item.duration)}`}
+        left={(props) => <List.Icon {...props} icon="music-note" color={theme.textColor} size={30} />}
+        onPress={() => this.handlePlayAudio(item, index)}
+        titleStyle={{ color: theme.textColor }}
+        descriptionStyle={{ color: theme.textColor }}
+      />
+    ));
 
     return (
-      <View style={{ backgroundColor: '#2D3047', flex: 1, padding: 10 }}>
+      <View style={{ backgroundColor: theme.backgroundColor, flex: 1, padding: 10 }}>
         <Searchbar
           placeholder="Search audio files"
           onChangeText={this.handleSearch}
           value={searchQuery}
           style={{
-            backgroundColor: '#44486A',
+            backgroundColor: theme.cardBackground,
           }}
-          placeholderTextColor="#CCCEDE"
-          iconColor="#CCCEDE"
-          inputStyle={{ color: '#CCCEDE' }}
+          placeholderTextColor={theme.textColor}
+          iconColor={theme.textColor}
+          inputStyle={{ color: theme.textColor }}
         />
         <FlatList
           data={audioFiles}
           keyExtractor={(item) => item.id}
           renderItem={({ item, index }) => (
-            <this.MemoizedListItem item={item} index={index} menuVisible={menuVisible} /> // Pass menuVisible as a prop
+            <MemoizedListItem item={item} index={index} menuVisible={menuVisible} />
           )}
           ItemSeparatorComponent={() => <Divider />}
         />
