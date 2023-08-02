@@ -23,14 +23,14 @@ class AudioListScreen extends Component {
     this.getAudioFiles();
   }
 
-  handleAddToPlaylist = (audioFile) => {
+  // handleAddToPlaylist = (audioFile) => {
    
-    this.setState({ menuVisible: true, selectedAudioFile: audioFile });
-  };
+  //   this.setState({ menuVisible: true, selectedAudioFile: audioFile });
+  // };
 
-  handleMenuClose = () => {
-    this.setState({ menuVisible: false, selectedAudioFile: null });
-  };
+  // handleMenuClose = () => {
+  //   this.setState({ menuVisible: false, selectedAudioFile: null });
+  // };
 
 
 

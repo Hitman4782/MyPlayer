@@ -27,14 +27,14 @@ const Home = ({ navigation }) => {
       paddingTop: 0,
     },
     iconButton: {
-      flexDirection: "row", // Added flexDirection
+      flexDirection: "row", 
       alignItems: "center",
       justifyContent: "center",
       marginLeft: 15,
     },
     buttonText: {
-      color: "#219ebc", // You can adjust the color as needed
-      marginLeft: 15, // Adjust the spacing between the icon and text as needed
+      color: "#219ebc",
+      marginLeft: 15,
     },
   });
 

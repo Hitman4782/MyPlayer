@@ -92,7 +92,7 @@ const Player = ({ route }) => {
   useEffect(() => {
     setCurrentAudioFile(audioFile);
     setCurrentIndex(index);
-    setIsMusic(!audioFile.isRadio); // Check if it's music
+    setIsMusic(!audioFile.isRadio); 
     setIsRadio(audioFile.isRadio);
     setIsRadioName(audioFile.name);
 
@@ -102,7 +102,7 @@ const Player = ({ route }) => {
       setIsSeeking(false);
       setPosition(0);
       setDuration(0);
-      setCurrentRadioIndex(RadioIndex); // You may or may not want to set this value based on your requirement
+      setCurrentRadioIndex(RadioIndex);
       loadSound(audioFile.uri, true);
     } else {
       loadSound(audioFile.uri);

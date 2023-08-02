@@ -84,12 +84,12 @@ const FavoriteScreen = ({ navigation }) => {
     setSearchQuery(query);
   };
 
-  const showMenu = (station) => {
-    setSelectedStation(station);
-    setVisible(true);
-  };
+  // const showMenu = (station) => {
+  //   setSelectedStation(station);
+  //   setVisible(true);
+  // };
 
-  const hideMenu = () => setVisible(false);
+//  const hideMenu = () => setVisible(false);
 
   // const handleShare = async () => {
   //   if (selectedStation) {

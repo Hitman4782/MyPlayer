@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTheme } from '../../components/ThemeContext';
-import AudioListScreen from './Music'; // Adjust the import path as needed
+import AudioListScreen from './Music'; 
 
 const AudioListScreenWithTheme = ({ navigation, route }) => {
   const { theme } = useTheme();
